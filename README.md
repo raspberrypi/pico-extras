@@ -21,7 +21,7 @@ Library|Description
 &nbsp;&nbsp;&nbsp;[pico_scanvideo_dpi](src/rp2_common/pico_scanvideo_dbi)| Highly functional and stable support for parallel RGB output and VSYNC/HSYNC/DEN/CLOCK for VGA/DPI.
 [pico_util_buffer](src/common/pico_util_buffer)|Rather incomplete buffer abstraction, used by pico_audio and pico_scanvideo
 [platypus](src/common/platypus)| Decoder for a custom image compression format suitable for dithered images (good for RGB555) and suitable for decoding on RP2040 at scanline speeds ... i.e you can easily decode a 320x240 image 60x per second to avoid storing the uncompressed image for scanout video. It gets about 50% compression (but is designed only for 4x4 fixed dithered RGB555 images, so is somewhat specific!). TODO add the encoder here :-)
-[usb_device](src/rp2_common/usb_device), [usb_common](src/rp2_common/usb_common)| The custom and somewhat minimal USB device stack used in the bootrom. We now use TinyUSB in the Pico SDK but kep here for posterit
+[usb_device](src/rp2_common/usb_device), [usb_common](src/rp2_common/usb_common)| The custom and somewhat minimal USB device stack used in the bootrom. We now use TinyUSB in the Pico SDK but kept here for posterity
 [usb_device_msc](src/rp2_common/usb_device_msc)| USB Mass Storage Class implementation using _usb_device_
 
 You can add Pico Extras to your project similarly to the SDK (copying [external/pico_extras_import.cmake](external/pico_extras_import.cmake) into your project)
