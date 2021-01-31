@@ -92,6 +92,10 @@ extern "C" {
 #define PICO_AUDIO_PWM_MONO_PIN PICO_AUDIO_PWM_L_PIN
 #endif
 
+#ifndef PIO_AUDIO_PWM_INTERP_SAVE
+#define PIO_AUDIO_PWM_INTERP_SAVE 1
+#endif
+
 // Allow use of pico_audio driver without actually doing anything much
 #ifndef PICO_AUDIO_PWM_NOOP
 #ifdef PICO_AUDIO_NOOP
