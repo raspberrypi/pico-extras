@@ -214,7 +214,7 @@ static uint32_t dma_states[DMA_STATE_COUNT];
 #define PICO_SCANVIDEO_ENABLE_VIDEO_CLOCK_DOWN 1
 
 #if PICO_SCANVIDEO_ENABLE_VIDEO_CLOCK_DOWN
-static uint16_t video_clock_down;
+static uint16_t video_clock_down_times_2;
 #endif
 
 semaphore_t vblank_begin;
@@ -992,7 +992,7 @@ void setup_sm(int sm, uint offset) {
                            video_htiming_program_get_default_config(offset);
 
 #if PICO_SCANVIDEO_ENABLE_VIDEO_CLOCK_DOWN
-    sm_config_set_clkdiv_int_frac(&config, video_clock_down, 0);
+    sm_config_set_clkdiv_int_frac(&config, video_clock_down_times_2 / 2, (video_clock_down_times_2 & 1u) << 7u);
 #endif
 
     if (!is_scanline_sm(sm)) {
@@ -1316,37 +1316,43 @@ bool scanvideo_setup_with_timing(const scanvideo_mode_t *mode, const scanvideo_t
     // shared state init complete - probably overkill
     __mem_fence_release();
 
-    // todo this is incorrect
-    // set first 18 pins to PIO for vga/dpi
-#if PICO_SCANVIDEO_ENABLE_DEN_PIN
-#define MAX_PIN 20
-    bi_decl_if_func_used(bi_4pins_with_names(PICO_SCANVIDEO_SYNC_PIN_BASE, "HSync",
-                                     PICO_SCANVIDEO_SYNC_PIN_BASE + 1, "VSync",
-                                     PICO_SCANVIDEO_SYNC_PIN_BASE + 2, "Display Enable",
-                                     PICO_SCANVIDEO_SYNC_PIN_BASE + 3, "Pixel Clock"));
-#else
-#define MAX_PIN 19
-    bi_local_decl(bi_3pins_with_names(PICO_SCANVIDEO_SYNC_PIN_BASE, "HSync",
-                                     PICO_SCANVIDEO_SYNC_PIN_BASE + 1, "VSync",
-                                     PICO_SCANVIDEO_SYNC_PIN_BASE + 2, "Pixel Clock"));
-#endif
+    uint pin_mask = 3u << PICO_SCANVIDEO_SYNC_PIN_BASE;
+    bi_decl_if_func_used(bi_2pins_with_names(PICO_SCANVIDEO_SYNC_PIN_BASE, "HSync",
+                                               PICO_SCANVIDEO_SYNC_PIN_BASE + 1, "VSync"));
 
+#if PICO_SCANVIDEO_ENABLE_DEN_PIN
+    bi_decl_if_func_used(bi_1pin_with_name(PICO_SCANVIDEO_SYNC_PIN_BASE + 2, "Display Enable"));
+    pin_mask |= 4u << PICO_SCANVIDEO_SYNC_PIN_BASE;
+#endif
+#if PICO_SCANVIDEO_ENABLE_CLOCK_PIN
+    bi_decl_if_func_used(bi_1pin_with_name(PICO_SCANVIDEO_SYNC_PIN_BASE + 3, "Pixel Clock"));
+    pin_mask |= 8u << PICO_SCANVIDEO_SYNC_PIN_BASE;
+#endif
+    pin_mask |= 0x1f << (PICO_SCANVIDEO_COLOR_PIN_BASE + PICO_SCANVIDEO_DPI_PIXEL_RSHIFT);
+    pin_mask |= 0x1f << (PICO_SCANVIDEO_COLOR_PIN_BASE + PICO_SCANVIDEO_DPI_PIXEL_GSHIFT);
+    pin_mask |= 0x1f << (PICO_SCANVIDEO_COLOR_PIN_BASE + PICO_SCANVIDEO_DPI_PIXEL_BSHIFT);
     bi_decl_if_func_used(bi_pin_mask_with_name(0x1f << (PICO_SCANVIDEO_COLOR_PIN_BASE + PICO_SCANVIDEO_DPI_PIXEL_RSHIFT), "Red 0-4"));
     bi_decl_if_func_used(bi_pin_mask_with_name(0x1f << (PICO_SCANVIDEO_COLOR_PIN_BASE + PICO_SCANVIDEO_DPI_PIXEL_GSHIFT), "Green 0-4"));
     bi_decl_if_func_used(bi_pin_mask_with_name(0x1f << (PICO_SCANVIDEO_COLOR_PIN_BASE + PICO_SCANVIDEO_DPI_PIXEL_BSHIFT), "Blue 0-4"));
 
-
-    for (uint8_t i = 0; i < MAX_PIN; ++i)
-        gpio_set_function(i, GPIO_FUNC_PIO0);
+    for(uint8_t i = 0; pin_mask; i++, pin_mask>>=1u) {
+        if (pin_mask & 1) gpio_set_function(i, GPIO_FUNC_PIO0);
+    }
 
 #if !PICO_SCANVIDEO_ENABLE_VIDEO_CLOCK_DOWN
     valid_params_if(SCANVIDEO_DPI, timing->clock_freq == video_clock_freq);
 #else
     uint sys_clk = clock_get_hz(clk_sys);
-    video_clock_down = sys_clk / (2 * timing->clock_freq);
-    if (2 * video_clock_down * timing->clock_freq != sys_clk) {
+    video_clock_down_times_2 = sys_clk / timing->clock_freq;
+#if PICO_SCANVIDEO_ENABLE_CLOCK_PIN
+    if (video_clock_down_times_2 * timing->clock_freq != sys_clk) {
         panic("System clock (%d) must be an integer multiple of 2 times the requested pixel clock (%d).", sys_clk, timing->clock_freq);
     }
+#else
+    if (video_clock_down_times_2 * timing->clock_freq != sys_clk) {
+        panic("System clock (%d) must be an integer multiple of the requested pixel clock (%d).", sys_clk, timing->clock_freq);
+    }
+#endif
 #endif
 
     valid_params_if(SCANVIDEO_DPI, mode->width * mode->xscale <= timing->h_active);

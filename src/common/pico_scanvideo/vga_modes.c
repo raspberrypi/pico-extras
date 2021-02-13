@@ -9,6 +9,8 @@
 // todo support for inverted-y (probably belongs in the scanline generators, as would inverted x)
 
 extern const scanvideo_pio_program_t video_24mhz_composable;
+
+#ifdef PICO_SCANVIDEO_48MHZ
 const scanvideo_timing_t vga_timing_640x480_60_default =
         {
                 .clock_freq = 24000000,
@@ -124,7 +126,6 @@ const scanvideo_timing_t vga_timing_1280x1024_40_default =
                 .enable_den = 0
         };
 
-
 const scanvideo_timing_t vga_timing_648x480_60_alt1 =
         {
 
@@ -222,66 +223,6 @@ const scanvideo_timing_t vga_timing_648x480_50ish3 =
         };
 
 #define actual_vga_timing_50 vga_timing_648x480_50ish3
-
-const scanvideo_mode_t vga_mode_160x120_60 =
-        {
-                .default_timing = &vga_timing_640x480_60_default,
-                .pio_program = &video_24mhz_composable,
-                .width = 160,
-                .height = 120,
-                .xscale = 4,
-                .yscale = 4,
-        };
-
-const scanvideo_mode_t vga_mode_213x160_60 =
-        {
-                .default_timing = &vga_timing_640x480_60_default,
-                .pio_program = &video_24mhz_composable,
-                .width = 213,
-                .height = 160,
-                .xscale = 3,
-                .yscale = 3,
-        };
-
-const scanvideo_mode_t vga_mode_320x240_60 =
-        {
-                .default_timing = &vga_timing_640x480_60_default,
-                .pio_program = &video_24mhz_composable,
-                .width = 320,
-                .height = 240,
-                .xscale = 2,
-                .yscale = 2,
-        };
-
-const scanvideo_mode_t vga_mode_640x480_60 =
-        {
-                .default_timing = &vga_timing_640x480_60_default,
-                .pio_program = &video_24mhz_composable,
-                .width = 640,
-                .height = 480,
-                .xscale = 1,
-                .yscale = 1,
-        };
-
-const scanvideo_mode_t vga_mode_640x480_50 =
-        {
-                .default_timing = &actual_vga_timing_50,
-                .pio_program = &video_24mhz_composable,
-                .width = 640,
-                .height = 480,
-                .xscale = 1,
-                .yscale = 1,
-        };
-
-const scanvideo_mode_t vga_mode_320x240_50 =
-        {
-                .default_timing = &actual_vga_timing_50,
-                .pio_program = &video_24mhz_composable,
-                .width = 320,
-                .height = 240,
-                .xscale = 2,
-                .yscale = 2,
-        };
 
 /* this is 50 hz */
 const scanvideo_timing_t vga_timing_wide_480_50 =
@@ -457,6 +398,90 @@ const scanvideo_mode_t vga_mode_1280x1024_40 =
                 .yscale = 1,
         };
 
+
+const scanvideo_mode_t vga_mode_640x480_50 =
+        {
+                .default_timing = &actual_vga_timing_50,
+                .pio_program = &video_24mhz_composable,
+                .width = 640,
+                .height = 480,
+                .xscale = 1,
+                .yscale = 1,
+        };
+
+const scanvideo_mode_t vga_mode_320x240_50 =
+        {
+                .default_timing = &actual_vga_timing_50,
+                .pio_program = &video_24mhz_composable,
+                .width = 320,
+                .height = 240,
+                .xscale = 2,
+                .yscale = 2,
+        };
+#else
+const scanvideo_timing_t vga_timing_640x480_60_default =
+        {
+                .clock_freq = 25000000,
+
+                .h_active = 640,
+                .v_active = 480,
+
+                .h_front_porch = 16,
+                .h_pulse = 64,
+                .h_total = 800,
+                .h_sync_polarity = 1,
+
+                .v_front_porch = 1,
+                .v_pulse = 2,
+                .v_total = 523,
+                .v_sync_polarity = 1,
+
+                .enable_clock = 0,
+                .clock_polarity = 0,
+
+                .enable_den = 0
+        };
+#endif
+
+const scanvideo_mode_t vga_mode_160x120_60 =
+        {
+                .default_timing = &vga_timing_640x480_60_default,
+                .pio_program = &video_24mhz_composable,
+                .width = 160,
+                .height = 120,
+                .xscale = 4,
+                .yscale = 4,
+        };
+
+const scanvideo_mode_t vga_mode_213x160_60 =
+        {
+                .default_timing = &vga_timing_640x480_60_default,
+                .pio_program = &video_24mhz_composable,
+                .width = 213,
+                .height = 160,
+                .xscale = 3,
+                .yscale = 3,
+        };
+
+const scanvideo_mode_t vga_mode_320x240_60 =
+        {
+                .default_timing = &vga_timing_640x480_60_default,
+                .pio_program = &video_24mhz_composable,
+                .width = 320,
+                .height = 240,
+                .xscale = 2,
+                .yscale = 2,
+        };
+
+const scanvideo_mode_t vga_mode_640x480_60 =
+        {
+                .default_timing = &vga_timing_640x480_60_default,
+                .pio_program = &video_24mhz_composable,
+                .width = 640,
+                .height = 480,
+                .xscale = 1,
+                .yscale = 1,
+        };
 
 const scanvideo_timing_t vga_timing_1280x720_60_default =
         {
