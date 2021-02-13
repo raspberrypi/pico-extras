@@ -813,7 +813,8 @@ bool sd_scatter_read_complete(int *status) {
     if (dma_channel_is_busy(sd_chain_dma_channel) || dma_channel_is_busy(sd_data_dma_channel) || dma_channel_is_busy(sd_pio_dma_channel)) {
         rc = false;
     } else {
-        rc = sd_pio->sm[SD_DAT_SM].addr == sd_cmd_or_dat_offset_no_arg_state_waiting_for_cmd;
+        rc = (sd_pio->sm[SD_DAT_SM].addr == sd_cmd_or_dat_offset_no_arg_state_waiting_for_cmd &&
+              pio_sm_is_tx_fifo_empty(sd_pio, SD_DAT_SM));
     }
     int s = SD_OK;
     if (rc) {
