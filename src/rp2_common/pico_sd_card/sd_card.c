@@ -8,6 +8,7 @@
 //  there is dead code, ugliness and zero error handling... it is very much in a prove it can work state (which it does)
 
 #include <stdio.h>
+#include "pico/stdlib.h"
 #include "pico/sd_card.h"
 #include "hardware/pio.h"
 #include "hardware/gpio.h"
@@ -466,13 +467,23 @@ void print_status(uint32_t *response_buffer, bool needs_fixup) {
 void read_status(bool dump)
 {
     uint32_t response_buffer[5];
-    // let's see the status
-    sd_command(sd_make_command(13, rca_high, rca_low, 0, 0), response_buffer, 6);
-    fixup_cmd_response_48(response_buffer);
-    uint8_t *b = (uint8_t *)response_buffer;
-    printf("%02x %02x %02x %02x : %02x %02x\n", b[0], b[1], b[2], b[3], b[4], b[5]);
-    if (dump) {
+
+    int not_ready_retries = 3;
+    while (not_ready_retries--) {
+      // let's see the status
+      sd_command(sd_make_command(13, rca_high, rca_low, 0, 0), response_buffer, 6);
+      fixup_cmd_response_48(response_buffer);
+      uint8_t *b = (uint8_t *)response_buffer;
+      printf("%02x %02x %02x %02x : %02x %02x\n", b[0], b[1], b[2], b[3], b[4], b[5]);
+      if (dump) {
         print_status(response_buffer, false);
+      }
+
+      // Break if ready
+      if (b[3] & 1) break;
+
+      // Wait if not ready and try again
+      sleep_ms(1);
     }
 }
 
@@ -865,7 +876,7 @@ int sd_writeblocks_async(const uint32_t *data, uint32_t sector_num, uint sector_
 {
     uint32_t response_buffer[5];
 
-#if 1 //def CRC_FIRST
+#ifdef CRC_FIRST
     // lets crc the first sector
     dma_channel_config c = dma_channel_get_default_config(sd_data_dma_channel);
     if (true)
@@ -975,8 +986,9 @@ int sd_writeblocks_async(const uint32_t *data, uint32_t sector_num, uint sector_
     assert(sector_count);
     int rc = sd_set_wide_bus(false); // use 1 bit writes for now
     if (rc) return rc;
+
     if (sector_count == 1) {
-        rc = sd_command(sd_make_command(24, sector_num >> 24, sector_num >> 16, sector_num >> 8, sector_num & 0xffu), response_buffer, 6);
+        rc = sd_command(sd_make_command(24, sector_num >> 24, (sector_num >> 16) & 0xff, (sector_num >> 8) & 0xff, sector_num & 0xffu), response_buffer, 6);
     } else
     {
         // todo this is only writing the first sector on SanDisk EDGE 16G right now - probably need a delay between sectors... works fine on a SAMSUNG EVO 32G
