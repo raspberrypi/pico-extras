@@ -489,6 +489,7 @@ void read_status(bool dump)
 
 int sd_set_wide_bus(bool wide)
 {
+  printf("Set bus width: %d\n", (wide ? 4 : 1));
     if (bus_width == bw_unknown || bus_width == (wide ? bw_narrow : bw_wide)) {
         if (wide && !allow_four_data_pins) {
             printf("May not select wide pus without 4 data pins\n");
@@ -651,7 +652,7 @@ static int sd_init( bool _allow_four_data_pins)
 
 int sd_init_1pin() {
     bi_decl_if_func_used(bi_1pin_with_name(PICO_SD_DAT0_PIN, "SDIO data"));
-    return sd_init(true);
+    return sd_init(false);
 }
 
 int sd_init_4pins() {
