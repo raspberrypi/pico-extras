@@ -11,7 +11,8 @@ This library is _deliberately_ very low level, but gives you full control over e
 == Types of display
 
 The API is currently very focused for `pico_scanvideo_dpi` which outputs parallel RGB data and sync signal on
-pins for DPI (via resistor DAC) VGA. In this case, whilst the monitor requires accurate timing (for VGA), the timing is fully under control of the RP2040. (note by convention color is gener)
+pins for DPI (via resistor DAC) VGA. In this case, whilst the monitor requires accurate timing (for VGA), the timing is fully under control of the RP2040. (note by convention color is generally
+5:5:5 RGB)
 
 `pico-scanvideo-dbi` is a (previous proof of concept - currently non-compiling) version for 16 bit MIPI DBI displays, where the data is still clocked out in parallel (though the actual timing is less critical than with signals intended for monitors). In the case of GRAM based displas, this just copies data at high speed into the GRAM, so double-buffering, or tearing support is necessary depending on the type of video your are displaying
 
@@ -78,7 +79,7 @@ on your host machine using SDL. This is super helpful for debugging more complex
 === Fault Tolerant
 
 Whilst if you were super cycle hungry, you could implement the video code with sightly less overhead, it is designed to not fail completely if you don't get the right data to it at the right time. If you
-are too late with a scanline, it will show as as blue (`PICO_SCANVIDEO_MISSING_SCANLINE_COLOR`) on the left of the screen, and black on the right. Additionally if your DMA transfer does not complete correctly or your scanline state machine stalls, then it will do its best to recover, so that you at least see something. In any case, the code is really pretty fast and can display mu;ltiple 640x480 video planes at 48Mhz system clock.
+are too late with a scanline, it will show as as blue (`PICO_SCANVIDEO_MISSING_SCANLINE_COLOR`) on the left of the screen, and black on the right. Additionally if your DMA transfer does not complete correctly or your scanline state machine stalls, then it will do its best to recover, so that you at least see something. In any case, the code is really pretty fast and can display mulltiple 640x480 video planes at 48Mhz system clock.
 
 === Compressed Video RAM
 
@@ -102,7 +103,7 @@ implement your own.
 === Buffers
 
 As mentioned before, there are `PICO_SCANVIDEO_SCANLINE_BUFFER_COUNT` buffers available. Currently these are fixed size and statically allocated of `PICO_SCANVIDEO_MAX_SCANLINE_BUFFER_WORDS` * 32-bit entries).
-This will likely be expanded in the future to facilitate pointing at external scanline data (mostly for a 16 bit framebuffer, as for almost anything else you are generating - or assembling via DMA - content on the fly every time).
+This will likely be expanded in the future to facilitate pointing at external scanline data (mostly for a 16 bit framebuffer, as for almost anything else you are generating - or assembling via chain-DMA - content on the fly every time).
 
 The basic parts of a scanline buffer look like this:
 
@@ -133,7 +134,7 @@ The default scanline program deals with 16 bit pixels, generally assumed to be 5
 
 ==== How it works
 
-The data DMA-ed to this program is effectively a "compressed" scanline, consisting of 16-bit tokens (so the DMA stream is always an even number of tokens since there are 2 per 32-bit word). The
+The data DMA-ed to this program is effectively a "compressed" scanline, consisting of 16-bit tokens (the DMA stream must always be an even number of tokens since there are 2 per 32-bit word). The
 state machines consumes these low half word first, followed by high half-word (little endian)
 
 The following tokens are available:
@@ -162,18 +163,19 @@ Marks the end of a scanline (i.e. the state machine will now wait for the next s
 RAW1P_SKIP_ALIGN::
 A single pixel with color but with an extra token which can be used to aligned the DMA data (use `| RAW1P || COLOR | (ignored) ||`).
 
-IMPORTANT: You *MUST* end the scanline with onme or more black pixels of your own (otherwise your color will bleed into the blanking!!!). Note however the black pixel does not have to appear at the right end of the scanline, it can appear anywhere before that if the rest of the line is to be black anyway.
+IMPORTANT: You *MUST* end the scanline with one or more black pixels of your own (otherwise your color will bleed into the blanking!!!). Note however the black pixel does not have to appear at the right end of the scanline, it can appear anywhere before that if the rest of the line is to be black anyway.
 
 ==== So composable?
 
-Because of the `_SKIP_` variants it is possible to make token streams which are an even number in length (i.e. a multiple of 32-bit words) for any sequence of pixels, this means that you can concatenate token sequences without worrying about odd/even pixels in a 32 bit word. Thus a chain DMA can be used for example to compose arbitrary 32 bit aligned token sequences into a scanline without the CPU having to copy anything. This can be used for sprites and is used in the text mode example for fixed widths.
+Because of the `_SKIP_` variants it is possible to make token streams which are an even number in length (i.e. a multiple of 32-bit words) for any sequence of pixels, this means that you can concatenate token/pixel sequences without worrying about odd/even pixel alignment within a 32 bit word. Thus a chain DMA can be used for example to compose arbitrary 32 bit aligned token sequences into a scanline without the CPU having to copy anything. This can be used for sprites and is used in the text mode example with fixed width fragments (slices of the glyphs)
 
 Note that the `pico_scanvideo_dpi` library supports both fixed length (i.e. all DMA fragments are of a fixed length) and variable fragments too (see `PICO_SCANVIDEO_PLANE1_VARIABLE_FRAGMENT_DMA` and
 `PICO_SCANVIDEO_PLANE1_FIXED_FRAGMENT_DMA`). If you are getting into this level, you should probably wade thru the examples/source for now.
 
 === Multiple video planes
 
-`PICO_SCANVIDEO_PLANE_COUNT` defaults to 1, but may be set to 1, 2 or 3... Note the use of various separate defines (e.g. `PICO_SCANVIDEO_MAX_SCANLINE_BUFFER2_WORDS`), although they usually default to the plane 1 value.
+`PICO_SCANVIDEO_PLANE_COUNT` defaults to 1, but may be set to 1, 2 or 3 (note it is physically possible to do more, but you have to use
+a GPIO not an IRQ as you are using multiple PIOs at that point - this isn't part of the current code base). Note the use of various separate defines (e.g. `PICO_SCANVIDEO_MAX_SCANLINE_BUFFER2_WORDS`), although they usually default to the plane 1 value.
 
 Note the following additional scanline buffer members (note if you are using 3 planes you must
 provide data for all 3 (although in the case of the default program it is trivial to encode and entirely blank line with `COLOR_RUN`
@@ -209,13 +211,13 @@ scanvideo_scanline_buffer_t *scanvideo_begin_scanline_generation_linked(uint n, 
 
 This allows you to grab multiple scanline buffers for a single "logical scanline" which are the scan lines counted by the video mode. For example, you could define a 320x120 mode which is 640x480 timing with xscale of 2 and yscale of 4 (pixel doubling))
 
-Thus there are 4 scan lines displayed for each "logical scanlines"... usually these would be the same, however passing `n=2` to the above function would retrieve two scanline buffers that are owned by the scanline... you could set `link_after=1` for the first, in which case the first scanline buffer would be displayed for 1 of the 4, and then the second (i.e. sb0->link) would be displayed for the remaining 3 of the 4 scan lines). This is useful for (amongst other things) cases where each core may need to handle adjacent scan lines.
+Thus there are 4 scan lines displayed for each "logical scanlines"... usually these would be the same, however passing `n=2` to the above function would retrieve two scanline buffers that are to be used for the logical scanline... you could set `link_after=1` for the first, in which case the first scanline buffer would be displayed for 1 of the 4, and then the second (i.e. sb0->link) would be displayed for the remaining 3 of the 4 scan lines). This is useful for (amongst other things) cases where each core needs to handle multiple adjacent scan lines.
 
 == Gotchas / Random Thoughts
 
 - Depending on what other IRQs you have going on, you may want to run the video IRQs on the other core;
 +
-You should call `scanvideo_setup` and `scanvideo_timing_enable` from the core you wish to use for IRQs (it doesn't matter which, or if both cores are being used for scanline generation).
+You should call `scanvideo_setup` and `scanvideo_timing_enable` from the core you wish to use for IRQs (it doesn't matter which of, or if, both cores are being used for scanline generation).
 
 - The default 'composable' program relies on the SM FIFO to smooth out variations in the tokens/output pixel rate. In normal operation the FIFO should be full when the scanline is triggered, so there is a full 2*8 pixels of buffer. Generally data underruns should not be a problem, but you should be aware of the possibility.
 
