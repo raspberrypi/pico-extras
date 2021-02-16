@@ -14,7 +14,7 @@
 .define bpp 16
 ;.define bpp 8
 
-public end_of_scanline_skip_word_ALIGN:         ; || jmp end_of_scanline_skip_word_ALIGN | ignored ||
+public end_of_scanline_skip_ALIGN:              ; || jmp end_of_scanline_skip_ALIGN | ignored ||
   ; was 16 but we just discard the reset of the OSR
   ; so as to also support 8 bit grayscale
   out  null, 32;
@@ -56,7 +56,7 @@ public delay_f_1:
   out  pins, bpp  [extra1]
 .wrap
 
-public raw_1p_skip_word_ALIGN:                  ; || jmp raw_1p_skip_word_ALIGN | color | ignored ||
+public raw_1p_skip_ALIGN:                       ; | jmp raw_1p_skip_ALIGN | color | ignored ||
   out  pins, 32 ; requires correct out mask
 public nop_extra0:
 public delay_g_0:
@@ -72,7 +72,7 @@ public delay_g_0:
 .define bpp 16
 ;.define bpp 8
 
-public end_of_scanline_skip_word_ALIGN:          ; || jmp end_of_scanline_skip_word_ALIGN | ignored ||
+public end_of_scanline_skip_ALIGN:               ; || jmp end_of_scanline_skip_ALIGN | ignored ||
   ; was 16 but we just discard the reset of the OSR
   ; so as to also support 8 bit grayscale
   out  null, 32;
@@ -80,7 +80,7 @@ public end_of_scanline_skip_word_ALIGN:          ; || jmp end_of_scanline_skip_w
 public end_of_scanline_ALIGN:                    ; | jmp end_of_scanline_ALIGN ||
 
 public entry_point:
-  wait irq, 4                                   ; todo perhaps change this to out exec, 16... so that we can do multiple things (including setting black pixel)
+  wait irq, 4                                    ; todo perhaps change this to out exec, 16... so that we can do multiple things (including setting black pixel)
 public nop_raw:
   out  pc, bpp
 

@@ -1747,7 +1747,7 @@ void validate_scanline(const uint32_t *dma_data, uint dma_data_size,
     do {
         uint16_t cmd = *it++;
         switch (cmd) {
-            case video_24mhz_composable_program_extern(end_of_scanline_skip_word_ALIGN):
+            case video_24mhz_composable_program_extern(end_of_scanline_skip_ALIGN):
                 it++;
                 // fall thru
             case video_24mhz_composable_program_extern(end_of_scanline_ALIGN):
@@ -1790,7 +1790,7 @@ void validate_scanline(const uint32_t *dma_data, uint dma_data_size,
                 }
                 break;
 #if !PICO_SCANVIDEO_USE_RAW1P_2CYCLE
-            case video_24mhz_composable_program_extern(raw_1p_skip_word_ALIGN):
+            case video_24mhz_composable_program_extern(raw_1p_skip_ALIGN):
                 assert(pixels < pixels_end);
                 pixels++; it++;
                 break;

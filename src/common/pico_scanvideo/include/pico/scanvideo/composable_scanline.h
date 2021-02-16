@@ -27,12 +27,12 @@
 #define __DVP_JMP(x) ((unsigned)video_24mhz_composable_program_extern(x))
 #define COMPOSABLE_COLOR_RUN __DVP_JMP(color_run)
 #define COMPOSABLE_EOL_ALIGN __DVP_JMP(end_of_scanline_ALIGN)
-#define COMPOSABLE_EOL_SKIP_ALIGN __DVP_JMP(end_of_scanline_skip_word_ALIGN)
+#define COMPOSABLE_EOL_SKIP_ALIGN __DVP_JMP(end_of_scanline_skip_ALIGN)
 #define COMPOSABLE_RAW_RUN __DVP_JMP(raw_run)
 #define COMPOSABLE_RAW_1P __DVP_JMP(raw_1p)
 #define COMPOSABLE_RAW_2P __DVP_JMP(raw_2p)
 #if !PICO_SCANVIDEO_USE_RAW1P_2CYCLE
-#define COMPOSABLE_RAW_1P_SKIP_ALIGN __DVP_JMP(raw_1p_skip_word_ALIGN)
+#define COMPOSABLE_RAW_1P_SKIP_ALIGN __DVP_JMP(raw_1p_skip_ALIGN)
 #else
 #define COMPOSABLE_RAW_1P_2CYCLE __DVP_JMP(raw_1p_2cycle)
 #endif
