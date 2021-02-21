@@ -20,3 +20,7 @@ void sys_arch_unprotect(sys_prot_t pval) {
 uint32_t sys_now(void) {
     return to_ms_since_boot(get_absolute_time());
 }
+
+u32_t sys_jiffies(void) {
+    return time_us_32();
+}
