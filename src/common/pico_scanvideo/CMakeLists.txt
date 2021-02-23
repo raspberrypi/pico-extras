@@ -1,4 +1,4 @@
-if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug" AND PICO_DEOPTIMIZED_DEBUG)
+if (PICO_ON_DEVICE AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug" AND PICO_DEOPTIMIZED_DEBUG)
     message("scanvideo is disabled for 'Debug' builds when PICO_DEOPTIMIZED_DEBUG=1")
 else()
     add_library(pico_scanvideo INTERFACE)
