@@ -200,7 +200,7 @@ static void wrap_producer_give(audio_connection_t *connection, audio_buffer_t *b
 
         mono_to_spdif_producer_give(connection, buffer);
 #else
-        stereo_to_spdif_producer_gibe(connection, buffer);
+        stereo_to_spdif_producer_give(connection, buffer);
 #endif
     } else {
         panic_unsupported();
