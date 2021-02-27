@@ -705,7 +705,7 @@ int sd_readblocks_sync(uint32_t *buf, uint32_t block, uint block_count)
     if (!rc)
     {
 //        printf("waiting for finish\n");
-        while (!sd_scatter_read_complete(&rc))
+        while (!sd_scatter_read_complete(&rc, NULL))
         {
             tight_loop_contents();
         }
@@ -804,7 +804,7 @@ int sd_readblocks_scatter_async(uint32_t *control_words, uint32_t block, uint bl
 
 int check_crc_count;
 
-bool sd_scatter_read_complete(int *status) {
+bool sd_scatter_read_complete(int *status, int *blocks_complete) {
 //    printf("%d:%d %d:%d %d:%d %d\n", dma_busy(sd_chain_dma_channel), (uint)dma_hw->ch[sd_chain_dma_channel].transfer_count,
 //           dma_busy(sd_data_dma_channel), (uint)dma_hw->ch[sd_data_dma_channel].transfer_count,
 //           dma_busy(sd_pio_dma_channel), (uint)dma_hw->ch[sd_pio_dma_channel].transfer_count, (uint)pio->sm[SD_DAT_SM].addr);
@@ -827,6 +827,10 @@ bool sd_scatter_read_complete(int *status) {
             }
         }
         check_crc_count = 0;
+    }
+    else if (blocks_complete)
+    {
+        *blocks_complete = ((uint32_t*)dma_channel_hw_addr(sd_chain_dma_channel)->read_addr - ctrl_words) >> 2;
     }
     if (status) *status = s;
     return rc;
