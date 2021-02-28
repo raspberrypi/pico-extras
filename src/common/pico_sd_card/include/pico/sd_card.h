@@ -40,6 +40,7 @@ int sd_init_1pin();
 int sd_readblocks_sync(uint32_t *buf, uint32_t block, uint block_count);
 int sd_readblocks_async(uint32_t *buf, uint32_t block, uint block_count);
 int sd_readblocks_scatter_async(uint32_t *control_words, uint32_t block, uint block_count);
+void sd_set_byteswap_on_read(bool swap);
 bool sd_scatter_read_complete(int *status);
 int sd_writeblocks_async(const uint32_t *data, uint32_t sector_num, uint sector_count);
 bool sd_write_complete(int *status);
