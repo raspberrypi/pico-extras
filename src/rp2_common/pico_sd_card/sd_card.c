@@ -56,6 +56,7 @@ const int sd_chain_dma_channel = 9;
 const int sd_pio_dma_channel = 8;
 
 static bool allow_four_data_pins;
+static bool bytes_swap_on_read = false;
 
 struct message {
     int len;
@@ -661,6 +662,11 @@ int sd_init_4pins() {
     return sd_init(true);
 }
 
+void sd_set_byteswap_on_read(bool swap)
+{
+    bytes_swap_on_read = swap;
+}
+
 static uint32_t crcs[PICO_SD_MAX_BLOCK_COUNT * 2];
 static uint32_t ctrl_words[(PICO_SD_MAX_BLOCK_COUNT + 1) * 4];
 static uint32_t pio_cmd_buf[PICO_SD_MAX_BLOCK_COUNT * 3];
@@ -767,7 +773,7 @@ int sd_readblocks_scatter_async(uint32_t *control_words, uint32_t block, uint bl
     assert(block_count <= PICO_SD_MAX_BLOCK_COUNT);
 
     assert(total == block_count * (128 + (bus_width == bw_wide ? 2 : 1)));
-    start_chain_dma_read_with_address_size_only(SD_DAT_SM, control_words, true, false);
+    start_chain_dma_read_with_address_size_only(SD_DAT_SM, control_words, !bytes_swap_on_read, false);
     uint32_t *buf = pio_cmd_buf;
     for(int i=0;i<block_count;i++) {
         buf = start_read_to_buf(SD_DAT_SM, buf, 512, !i);
