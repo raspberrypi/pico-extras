@@ -82,7 +82,7 @@ extern "C" {
 #endif
 
 #ifndef PICO_SCANVIDEO_COLOR_PIN_BASE
-#define PICO_SCANVIDEO_COLOR_PIN_BASE 1
+#define PICO_SCANVIDEO_COLOR_PIN_BASE 0
 #endif
 
 #ifndef PICO_SCANVIDEO_COLOR_PIN_COUNT
@@ -326,12 +326,28 @@ extern void scanvideo_default_configure_pio(pio_hw_t *pio, uint sm, uint offset,
 #define PICO_SPINLOCK_ID_VIDEO_IN_USE_LOCK 5
 #endif
 
+// note this is not necessarily an absolute gpio pin mask, it is still shifted by PICO_SCANVIDEO_COLOR_PIN_BASE
 #define PICO_SCANVIDEO_ALPHA_MASK (1u << PICO_SCANVIDEO_ALPHA_PIN)
+
+#ifndef PICO_SCANVIDEO_PIXEL_FROM_RGB8
 #define PICO_SCANVIDEO_PIXEL_FROM_RGB8(r, g, b) ((((b)>>3u)<<PICO_SCANVIDEO_PIXEL_BSHIFT)|(((g)>>3u)<<PICO_SCANVIDEO_PIXEL_GSHIFT)|(((r)>>3u)<<PICO_SCANVIDEO_PIXEL_RSHIFT))
+#endif
+
+#ifndef PICO_SCANVIDEO_PIXEL_FROM_RGB5
 #define PICO_SCANVIDEO_PIXEL_FROM_RGB5(r, g, b) (((b)<<PICO_SCANVIDEO_PIXEL_BSHIFT)|((g)<<PICO_SCANVIDEO_PIXEL_GSHIFT)|((r)<<PICO_SCANVIDEO_PIXEL_RSHIFT))
+#endif
+
+#ifndef PICO_SCANVIDEO_R5_FROM_PIXEL
 #define PICO_SCANVIDEO_R5_FROM_PIXEL(p) (((p)>>PICO_SCANVIDEO_PIXEL_RSHIFT)&0x1f)
+#endif
+
+#ifndef PICO_SCANVIDEO_G5_FROM_PIXEL
 #define PICO_SCANVIDEO_G5_FROM_PIXEL(p) (((p)>>PICO_SCANVIDEO_PIXEL_GSHIFT)&0x1f)
+#endif
+
+#ifndef PICO_SCANVIDEO_B5_FROM_PIXEL
 #define PICO_SCANVIDEO_B5_FROM_PIXEL(p) (((p)>>PICO_SCANVIDEO_PIXEL_BSHIFT)&0x1f)
+#endif
 
 #ifdef __cplusplus
 }
