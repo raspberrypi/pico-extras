@@ -18,7 +18,7 @@ Library|Description
 [pico_sleep](src/rp2_common/pico_sleep)|Low power related APIs, WIP because they are not sufficiently generic and also only handle core 0
 [pico_scanvideo](src/common/pico_scanvideo)|Support for video output where every pixel is _scanned out_ every frame. VGA/DPI support is highly functional and stable, but the API is subject to change
 &nbsp;&nbsp;&nbsp;[pico_scanvideo_dbi](src/rp2_common/pico_scanvideo_dbi)| currently non-compiling... placeholder for adding scanvideo over MIPI DBI support.
-&nbsp;&nbsp;&nbsp;[pico_scanvideo_dpi](src/rp2_common/pico_scanvideo_dbi)| Highly functional and stable support for parallel RGB output and VSYNC/HSYNC/DEN/CLOCK for VGA/DPI.
+&nbsp;&nbsp;&nbsp;[pico_scanvideo_dpi](src/rp2_common/pico_scanvideo_dpi)| Highly functional and stable support for parallel RGB output and VSYNC/HSYNC/DEN/CLOCK for VGA/DPI.
 [pico_util_buffer](src/common/pico_util_buffer)|Rather incomplete buffer abstraction, used by pico_audio and pico_scanvideo
 [platypus](src/common/platypus)| Decoder for a custom image compression format suitable for dithered images (good for RGB555) and suitable for decoding on RP2040 at scanline speeds ... i.e you can easily decode a 320x240 image 60x per second to avoid storing the uncompressed image for scanout video. It gets about 50% compression (but is designed only for 4x4 fixed dithered RGB555 images, so is somewhat specific!). TODO add the encoder here :-)
 [usb_device](src/rp2_common/usb_device), [usb_common](src/rp2_common/usb_common)| The custom and somewhat minimal USB device stack used in the bootrom. We now use TinyUSB in the Pico SDK but kept here for posterity
