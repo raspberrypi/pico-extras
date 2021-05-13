@@ -483,6 +483,40 @@ const scanvideo_mode_t vga_mode_640x480_60 =
                 .yscale = 1,
         };
 
+/* Requires 130Mhz system clock, but standard XGA mode */
+const scanvideo_timing_t vga_timing_1024x768_60_default =
+        {
+                .clock_freq = 65000000,
+
+                .h_active = 1024,
+                .v_active = 768,
+
+                .h_front_porch = 24,
+                .h_pulse = 136,
+                .h_total = 1344,
+                .h_sync_polarity = 0,
+
+                .v_front_porch = 3,
+                .v_pulse = 6,
+                .v_total = 806,
+                .v_sync_polarity = 1,
+
+                .enable_clock = 0,
+                .clock_polarity = 0,
+
+                .enable_den = 0
+        };
+
+const scanvideo_mode_t vga_mode_1024x768_60 =
+        {
+                .default_timing = &vga_timing_1024x768_60_default,
+                .pio_program = &video_24mhz_composable,
+                .width = 1024,
+                .height = 768,
+                .xscale = 1,
+                .yscale = 1,
+        };
+
 const scanvideo_timing_t vga_timing_1280x720_60_default =
         {
                 .clock_freq = 74250000,

@@ -278,6 +278,7 @@ extern const scanvideo_mode_t vga_mode_800x600_54;
 extern const scanvideo_mode_t vga_mode_800x600_60;
 extern const scanvideo_mode_t vga_mode_1024x768_63;
 extern const scanvideo_mode_t vga_mode_1280x1024_40;
+extern const scanvideo_mode_t vga_mode_1024x768_60;
 extern const scanvideo_mode_t vga_mode_720p_60;
 extern const scanvideo_mode_t vga_mode_1080p_60;
 
