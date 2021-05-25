@@ -25,10 +25,6 @@ CU_REGISTER_DEBUG_PINS(audio_timing)
 #define GPIO_FUNC_PIOx __CONCAT(GPIO_FUNC_PIO, PICO_AUDIO_SPDIF_PIO)
 #define DREQ_PIOx_TX0 __CONCAT(__CONCAT(DREQ_PIO, PICO_AUDIO_SPDIF_PIO), _TX0)
 
-#define dma_intsx __CONCAT(dma_hw->ints, PICO_AUDIO_SPDIF_DMA_IRQ)
-#define dma_channel_set_irqx_enabled __CONCAT(__CONCAT(dma_channel_set_irq, PICO_AUDIO_SPDIF_DMA_IRQ),_enabled)
-#define DMA_IRQ_x __CONCAT(DMA_IRQ_, PICO_AUDIO_SPDIF_DMA_IRQ)
-
 struct {
     audio_buffer_t *playing_buffer;
     uint32_t freq;
@@ -167,8 +163,8 @@ const audio_format_t *audio_spdif_setup(const audio_format_t *intended_audio_for
                           false // trigger
     );
 
-    irq_add_shared_handler(DMA_IRQ_x, audio_spdif_dma_irq_handler, PICO_SHARED_IRQ_HANDLER_DEFAULT_ORDER_PRIORITY);
-    dma_channel_set_irqx_enabled(dma_channel, 1);
+    irq_add_shared_handler(DMA_IRQ_0 + PICO_AUDIO_SPDIF_DMA_IRQ, audio_spdif_dma_irq_handler, PICO_SHARED_IRQ_HANDLER_DEFAULT_ORDER_PRIORITY);
+    dma_irqn_set_channel_enabled(PICO_AUDIO_SPDIF_DMA_IRQ, dma_channel, 1);
     return intended_audio_format;
 }
 
@@ -337,8 +333,8 @@ void __isr __time_critical_func(audio_spdif_dma_irq_handler)() {
     assert(false);
 #else
     uint dma_channel = shared_state.dma_channel;
-    if (dma_intsx & (1u << dma_channel)) {
-        dma_intsx = 1u << dma_channel;
+    if (dma_irqn_get_channel_status(PICO_AUDIO_SPDIF_DMA_IRQ, dma_channel)) {
+        dma_irqn_acknowledge_channel(PICO_AUDIO_SPDIF_DMA_IRQ, dma_channel);
         DEBUG_PINS_SET(audio_timing, 4);
         // free the buffer we just finished
         if (shared_state.playing_buffer) {
@@ -364,7 +360,7 @@ void audio_spdif_set_enabled(bool enabled) {
             printf("(on core %d\n", get_core_num());
         }
 #endif
-        irq_set_enabled(DMA_IRQ_x, enabled);
+        irq_set_enabled(DMA_IRQ_0 + PICO_AUDIO_SPDIF_DMA_IRQ, enabled);
 
         if (enabled) {
             audio_start_dma_transfer();

@@ -1163,7 +1163,7 @@ scanvideo_scanline_buffer_t *__video_time_critical_func(scanvideo_begin_scanline
 }
 
 #if PICO_SCANVIDEO_LINKED_SCANLINE_BUFFERS
-extern scanvideo_scanline_buffer_t *__video_time_critical_func(scanvideo_begin_scanline_generation_linked)(uint n,
+scanvideo_scanline_buffer_t *__video_time_critical_func(scanvideo_begin_scanline_generation_linked)(uint n,
         bool block) {
     full_scanline_buffer_t *fsb;
 
@@ -1435,8 +1435,6 @@ bool scanvideo_setup_with_timing(const scanvideo_mode_t *mode, const scanvideo_t
 
     dma_claim_mask(PICO_SCANVIDEO_SCANLINE_DMA_CHANNELS_MASK);
     dma_set_irq0_channel_mask_enabled(PICO_SCANVIDEO_SCANLINE_DMA_CHANNELS_MASK, true);
-    // also done in scanvideo_timing_enable
-//    video_pio->inte1 = 1u << (PICO_SCANVIDEO_TIMING_SM + PIO_IRQ1_INTE_SM0_TXNFULL_LSB);
 
     // todo reset DMA channels
 
@@ -1677,8 +1675,8 @@ void scanvideo_timing_enable(bool enable) {
     // todo but we should make sure we clear out state when we turn it off, and probably reset scanline counter when we turn it on
     if (enable != video_timing_enabled) {
         // todo should we disable these too? if not move to scanvideo_setup
-        video_pio->inte0 = PIO_IRQ0_INTE_SM0_BITS | PIO_IRQ0_INTE_SM1_BITS;
-        video_pio->inte1 = (1u << (PICO_SCANVIDEO_TIMING_SM + PIO_IRQ1_INTE_SM0_TXNFULL_LSB));
+        pio_set_irq0_source_mask_enabled(video_pio, (1u << pis_interrupt0) | (1u << pis_interrupt1), true);
+        pio_set_irq1_source_enabled(video_pio, pis_sm0_tx_fifo_not_full + PICO_SCANVIDEO_TIMING_SM, true);
         irq_set_mask_enabled((1u << PIO0_IRQ_0)
                               | (1u << PIO0_IRQ_1)
                               #if !PICO_SCANVIDEO_NO_DMA_TRACKING

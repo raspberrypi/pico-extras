@@ -31,10 +31,6 @@ CU_REGISTER_DEBUG_PINS(audio_timing)
 #define GPIO_FUNC_PIOx __CONCAT(GPIO_FUNC_PIO, PICO_AUDIO_I2S_PIO)
 #define DREQ_PIOx_TX0 __CONCAT(__CONCAT(DREQ_PIO, PICO_AUDIO_I2S_PIO), _TX0)
 
-#define dma_intsx __CONCAT(dma_hw->ints, PICO_AUDIO_I2S_DMA_IRQ)
-#define dma_channel_set_irqx_enabled __CONCAT(__CONCAT(dma_channel_set_irq, PICO_AUDIO_I2S_DMA_IRQ),_enabled)
-#define DMA_IRQ_x __CONCAT(DMA_IRQ_, PICO_AUDIO_I2S_DMA_IRQ)
-
 struct {
     audio_buffer_t *playing_buffer;
     uint32_t freq;
@@ -89,8 +85,8 @@ const audio_format_t *audio_i2s_setup(const audio_format_t *intended_audio_forma
                           false // trigger
     );
 
-    irq_add_shared_handler(DMA_IRQ_x, audio_i2s_dma_irq_handler, PICO_SHARED_IRQ_HANDLER_DEFAULT_ORDER_PRIORITY);
-    dma_channel_set_irqx_enabled(dma_channel, 1);
+    irq_add_shared_handler(DMA_IRQ_0 + PICO_AUDIO_I2S_DMA_IRQ, audio_i2s_dma_irq_handler, PICO_SHARED_IRQ_HANDLER_DEFAULT_ORDER_PRIORITY);
+    dma_irqn_set_channel_enabled(PICO_AUDIO_I2S_DMA_IRQ, dma_channel, 1);
     return intended_audio_format;
 }
 
@@ -262,7 +258,7 @@ bool audio_i2s_connect_s8(audio_buffer_pool_t *producer) {
     audio_i2s_consumer = audio_new_consumer_pool(&pio_i2s_consumer_buffer_format, 2, samples_per_buffer);
 
     // todo we need a method to calculate this in clocks
-    uint32_t system_clock_frequency = 48000000;
+    uint32_t system_clock_frequency = clock_get_hz(clk_sys);
 //    uint32_t divider = system_clock_frequency * 256 / producer->format->sample_freq * 16 * 4;
     uint32_t divider = system_clock_frequency * 4 / producer->format->sample_freq; // avoid arithmetic overflow
     pio_sm_set_clkdiv_int_frac(audio_pio, shared_state.pio_sm, divider >> 8u, divider & 0xffu);
@@ -322,8 +318,8 @@ void __isr __time_critical_func(audio_i2s_dma_irq_handler)() {
     assert(false);
 #else
     uint dma_channel = shared_state.dma_channel;
-    if (dma_intsx & (1u << dma_channel)) {
-        dma_intsx = 1u << dma_channel;
+    if (dma_irqn_get_channel_status(PICO_AUDIO_I2S_DMA_IRQ, dma_channel)) {
+        dma_irqn_acknowledge_channel(PICO_AUDIO_I2S_DMA_IRQ, dma_channel);
         DEBUG_PINS_SET(audio_timing, 4);
         // free the buffer we just finished
         if (shared_state.playing_buffer) {
@@ -349,7 +345,7 @@ void audio_i2s_set_enabled(bool enabled) {
             printf("(on core %d\n", get_core_num());
         }
 #endif
-        irq_set_enabled(DMA_IRQ_x, enabled);
+        irq_set_enabled(DMA_IRQ_0 + PICO_AUDIO_I2S_DMA_IRQ, enabled);
 
         if (enabled) {
             audio_start_dma_transfer();

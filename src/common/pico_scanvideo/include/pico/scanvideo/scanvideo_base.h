@@ -267,6 +267,7 @@ typedef uint (*scanvideo_scanline_repeat_count_fn)(uint32_t scanline_id);
 void scanvideo_set_scanline_repeat_fn(scanvideo_scanline_repeat_count_fn fn);
 
 extern const scanvideo_timing_t vga_timing_640x480_60_default;
+extern const scanvideo_timing_t vga_timing_1280x1024_60_default;
 extern const scanvideo_timing_t vga_timing_wide_480_50;
 extern const scanvideo_timing_t vga_timing_648x480_60_alt1;
 
@@ -279,6 +280,7 @@ extern const scanvideo_mode_t vga_mode_800x600_60;
 extern const scanvideo_mode_t vga_mode_1024x768_63;
 extern const scanvideo_mode_t vga_mode_1280x1024_40;
 extern const scanvideo_mode_t vga_mode_1024x768_60;
+extern const scanvideo_mode_t vga_mode_1280x1024_60;
 extern const scanvideo_mode_t vga_mode_720p_60;
 extern const scanvideo_mode_t vga_mode_1080p_60;
 

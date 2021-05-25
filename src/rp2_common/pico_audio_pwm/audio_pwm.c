@@ -26,10 +26,6 @@
 #define GPIO_FUNC_PIOx __CONCAT(GPIO_FUNC_PIO, PICO_AUDIO_PWM_PIO)
 #define DREQ_PIOx_TX0 __CONCAT(__CONCAT(DREQ_PIO, PICO_AUDIO_PWM_PIO), _TX0)
 
-#define dma_intsx __CONCAT(dma_hw->ints, PICO_AUDIO_PWM_DMA_IRQ)
-#define dma_channel_set_irqx_enabled __CONCAT(__CONCAT(dma_channel_set_irq, PICO_AUDIO_PWM_DMA_IRQ),_enabled)
-#define DMA_IRQ_x __CONCAT(DMA_IRQ_, PICO_AUDIO_PWM_DMA_IRQ)
-
 // ======================
 // == DEBUGGING =========
 
@@ -145,9 +141,8 @@ static void __isr __time_critical_func(audio_pwm_dma_irq_handler)()
     for(int ch = 0; ch < shared_state.channel_count; ch++)
     {
         uint dma_channel = shared_state.dma_channel[ch];
-        if (dma_intsx & (1u << dma_channel))
-        {
-            dma_intsx = 1u << dma_channel;
+        if (dma_irqn_get_channel_status(PICO_AUDIO_PWM_DMA_IRQ, dma_channel)) {
+            dma_irqn_acknowledge_channel(PICO_AUDIO_PWM_DMA_IRQ, dma_channel);
             DEBUG_PINS_SET(audio_timing, 4);
             // free the buffer we just finished
             if (shared_state.playing_buffer[ch])
@@ -217,8 +212,7 @@ const audio_format_t *audio_pwm_setup(const audio_format_t *intended_audio_forma
 
     const audio_pwm_channel_config_t *config = channel_config0;
 
-    // todo should be shared, but we don't have that yet
-    irq_set_exclusive_handler(DMA_IRQ_x, audio_pwm_dma_irq_handler);
+    irq_add_shared_handler(DMA_IRQ_0 + PICO_AUDIO_PWM_DMA_IRQ, audio_pwm_dma_irq_handler, PICO_SHARED_IRQ_HANDLER_DEFAULT_ORDER_PRIORITY);
 
     for(int ch = 0; ch < shared_state.channel_count; ch++)
     {
@@ -261,7 +255,7 @@ const audio_format_t *audio_pwm_setup(const audio_format_t *intended_audio_forma
                               0, // count
                               false // trigger
         );
-        dma_channel_set_irqx_enabled(dma_channel, 1);
+        dma_irqn_set_channel_enabled(PICO_AUDIO_PWM_DMA_IRQ, dma_channel, 1);
         config = 0;
     }
 
@@ -286,7 +280,7 @@ void audio_pwm_set_enabled(bool enabled)
         }
 #endif
 #if !PICO_AUDIO_PWM_NOOP
-        irq_set_enabled(DMA_IRQ_x, enabled);
+        irq_set_enabled(DMA_IRQ_0 + PICO_AUDIO_PWM_DMA_IRQ, enabled);
 
         if (enabled)
         {

@@ -8,9 +8,7 @@
 
 // todo support for inverted-y (probably belongs in the scanline generators, as would inverted x)
 
-extern const scanvideo_pio_program_t video_24mhz_composable;
-
-#ifdef PICO_SCANVIDEO_48MHZ
+#if PICO_SCANVIDEO_48MHZ
 const scanvideo_timing_t vga_timing_640x480_60_default =
         {
                 .clock_freq = 24000000,
@@ -585,3 +583,30 @@ const scanvideo_mode_t vga_mode_1080p_60 =
                 .yscale = 1,
         };
 
+const scanvideo_timing_t vga_timing_1280x1024_60_default =
+        {
+                .clock_freq = 108000000,
+
+                .h_active = 1280,
+                .v_active = 1024,
+
+                .h_front_porch = 48,
+                .h_pulse = 112,
+                .h_total = 1688,
+                .h_sync_polarity = 0,
+
+                .v_front_porch = 1,
+                .v_pulse = 3,
+                .v_total = 1066,
+                .v_sync_polarity = 0,
+};
+
+const scanvideo_mode_t vga_mode_1280x1024_60 =
+        {
+                .default_timing = &vga_timing_1920x1080_60_default,
+                .pio_program = &video_24mhz_composable,
+                .width = 1280,
+                .height = 1024,
+                .xscale = 1,
+                .yscale = 1,
+        };
