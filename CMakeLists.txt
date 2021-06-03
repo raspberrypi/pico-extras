@@ -16,6 +16,11 @@ if (NOT TARGET _pico_extras_inclusion_marker)
 
     pico_is_top_level_project(PICO_EXTRAS_TOP_LEVEL_PROJECT)
 
+    if (NOT PICO_EXTRAS_PATH)
+        set(PICO_EXTRAS_PATH ${CMAKE_CURRENT_LIST_DIR})
+    endif()
+    set(PICO_EXTRAS_PATH "${PICO_EXTRAS_PATH}" CACHE PATH "Path to Pico Extras")
+
     # The real work gets done in post_init which is called at the end of pico_sdk_init
     list(APPEND PICO_SDK_POST_LIST_FILES ${CMAKE_CURRENT_LIST_DIR}/post_init.cmake)
     if (PICO_EXTRAS_TOP_LEVEL_PROJECT)
@@ -25,9 +30,4 @@ if (NOT TARGET _pico_extras_inclusion_marker)
     else()
         set(PICO_SDK_POST_LIST_FILES ${PICO_SDK_POST_LIST_FILES} PARENT_SCOPE)
     endif()
-
-    if (NOT PICO_EXTRAS_PATH)
-        set(PICO_EXTRAS_PATH ${CMAKE_CURRENT_LIST_DIR})
-    endif()
-    set(PICO_EXTRAS_PATH "${PICO_EXTRAS_PATH}" CACHE PATH "Path to Pico Extras")
 endif()
