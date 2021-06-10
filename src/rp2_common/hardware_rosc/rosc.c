@@ -30,8 +30,13 @@ uint rosc_find_freq(uint32_t low_mhz, uint32_t high_mhz) {
 }
 
 void rosc_set_div(uint32_t div) {
-    assert(div <= 31 && div >= 1);
-    rosc_write(&rosc_hw->div, ROSC_DIV_VALUE_PASS + div);
+    assert(div <= 31);
+    rosc_clear_bad_write();
+    assert(rosc_write_okay());
+    // don't use rosc_write here because setting a valid DIV is incorrectly flagged as a bad write
+    rosc_hw->div = ROSC_DIV_VALUE_PASS + div;
+    rosc_clear_bad_write();
+    assert(rosc_write_okay());
 }
 
 void rosc_set_freq(uint32_t code) {
