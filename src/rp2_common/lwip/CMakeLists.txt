@@ -44,6 +44,36 @@ if (EXISTS ${LWIP_PATH}/${LWIP_TEST_PATH})
         ${LWIP_PATH}/src/core/ipv4/ip4_frag.c
         ${LWIP_PATH}/src/netif/ethernet.c
         ${LWIP_PATH}/src/netif/slipif.c
+        ${LWIP_PATH}/src/netif/ppp/auth.c
+        ${LWIP_PATH}/src/netif/ppp/ccp.c
+        ${LWIP_PATH}/src/netif/ppp/chap-md5.c
+        ${LWIP_PATH}/src/netif/ppp/chap_ms.c
+        ${LWIP_PATH}/src/netif/ppp/chap-new.c
+        ${LWIP_PATH}/src/netif/ppp/demand.c
+        ${LWIP_PATH}/src/netif/ppp/eap.c
+        ${LWIP_PATH}/src/netif/ppp/ecp.c
+        ${LWIP_PATH}/src/netif/ppp/eui64.c
+        ${LWIP_PATH}/src/netif/ppp/fsm.c
+        ${LWIP_PATH}/src/netif/ppp/ipcp.c
+        ${LWIP_PATH}/src/netif/ppp/ipv6cp.c
+        ${LWIP_PATH}/src/netif/ppp/lcp.c
+        ${LWIP_PATH}/src/netif/ppp/magic.c
+        ${LWIP_PATH}/src/netif/ppp/mppe.c
+        ${LWIP_PATH}/src/netif/ppp/multilink.c
+        ${LWIP_PATH}/src/netif/ppp/ppp.c
+        ${LWIP_PATH}/src/netif/ppp/pppapi.c
+        ${LWIP_PATH}/src/netif/ppp/pppcrypt.c
+        ${LWIP_PATH}/src/netif/ppp/pppoe.c
+        ${LWIP_PATH}/src/netif/ppp/pppol2tp.c
+        ${LWIP_PATH}/src/netif/ppp/pppos.c
+        ${LWIP_PATH}/src/netif/ppp/upap.c
+        ${LWIP_PATH}/src/netif/ppp/utils.c
+        ${LWIP_PATH}/src/netif/ppp/vj.c
+        ${LWIP_PATH}/src/netif/ppp/polarssl/arc4.c
+        ${LWIP_PATH}/src/netif/ppp/polarssl/des.c
+        ${LWIP_PATH}/src/netif/ppp/polarssl/md4.c
+        ${LWIP_PATH}/src/netif/ppp/polarssl/md5.c
+        ${LWIP_PATH}/src/netif/ppp/polarssl/sha1.c
         ${LWIP_PATH}/src/apps/http/httpd.c
         ${LWIP_PATH}/src/apps/http/fs.c
 
