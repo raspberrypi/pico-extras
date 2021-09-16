@@ -101,10 +101,10 @@ static void init_spdif_buffer(audio_buffer_t *buffer) {
 //        p++;
 
         p->l = (i ? PREAMBLE_X : PREAMBLE_Z) | 0b10101010101010100000000;
-        p->h = 0x55000000u | (c_bit << 25u);
+        p->h = 0x55000000u | (c_bit << 29u);
         p++;
         p->l = PREAMBLE_Y | 0b10101010101010100000000;
-        p->h = 0x55000000u | (c_bit << 25u);
+        p->h = 0x55000000u | (c_bit << 29u);
         p++;
 
     }
