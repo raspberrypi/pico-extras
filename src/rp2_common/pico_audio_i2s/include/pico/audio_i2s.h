@@ -152,7 +152,6 @@ bool audio_i2s_connect(audio_buffer_pool_t *producer);
  * \param producer
  */
 bool audio_i2s_connect_s8(audio_buffer_pool_t *producer);
-bool audio_i2s_connect_extra(audio_buffer_pool_t *producer, bool buffer_on_give, uint buffer_count, uint samples_per_buffer, audio_connection_t *connection);
 
 /** \brief \todo
  * \ingroup pico_audio_i2s

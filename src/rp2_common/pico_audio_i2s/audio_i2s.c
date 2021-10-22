@@ -43,8 +43,6 @@ audio_buffer_format_t pio_i2s_consumer_buffer_format = {
         .format = &pio_i2s_consumer_format,
 };
 
-static audio_buffer_t silence_buffer;
-
 static void __isr __time_critical_func(audio_i2s_dma_irq_handler)();
 
 const audio_format_t *audio_i2s_setup(const audio_format_t *intended_audio_format,
@@ -60,10 +58,6 @@ const audio_format_t *audio_i2s_setup(const audio_format_t *intended_audio_forma
     uint offset = pio_add_program(audio_pio, &audio_i2s_program);
 
     audio_i2s_program_init(audio_pio, sm, offset, config->data_pin, config->clock_pin_base);
-
-    silence_buffer.buffer = pico_buffer_alloc(PICO_AUDIO_I2S_BUFFER_SAMPLE_LENGTH * 4);
-    silence_buffer.sample_count = PICO_AUDIO_I2S_BUFFER_SAMPLE_LENGTH;
-    silence_buffer.format = &pio_i2s_consumer_buffer_format;
 
     __mem_fence_release();
     uint8_t dma_channel = config->dma_channel;
@@ -93,11 +87,9 @@ const audio_format_t *audio_i2s_setup(const audio_format_t *intended_audio_forma
 static audio_buffer_pool_t *audio_i2s_consumer;
 
 static void update_pio_frequency(uint32_t sample_freq) {
-    printf("setting pio freq %d\n", (int) sample_freq);
     uint32_t system_clock_frequency = clock_get_hz(clk_sys);
     assert(system_clock_frequency < 0x40000000);
     uint32_t divider = system_clock_frequency * 4 / sample_freq; // avoid arithmetic overflow
-    printf("System clock at %u, I2S clock divider 0x%x/256\n", (uint) system_clock_frequency, (uint)divider);
     assert(divider < 0x1000000);
     pio_sm_set_clkdiv_int_frac(audio_pio, shared_state.pio_sm, divider >> 8u, divider & 0xffu);
     shared_state.freq = sample_freq;
@@ -163,6 +155,23 @@ static struct producer_pool_blocking_give_connection m2s_audio_i2s_pg_connection
         }
 };
 
+static void pass_thru_producer_give(audio_connection_t *connection, audio_buffer_t *buffer) {
+    queue_full_audio_buffer(connection->consumer_pool, buffer);
+}
+
+static void pass_thru_consumer_give(audio_connection_t *connection, audio_buffer_t *buffer) {
+    queue_free_audio_buffer(connection->producer_pool, buffer);
+}
+
+static struct producer_pool_blocking_give_connection audio_i2s_pass_thru_connection = {
+        .core = {
+                .consumer_pool_take = consumer_pool_take_buffer_default,
+                .consumer_pool_give = pass_thru_consumer_give,
+                .producer_pool_take = producer_pool_take_buffer_default,
+                .producer_pool_give = pass_thru_producer_give,
+        }
+};
+
 bool audio_i2s_connect_thru(audio_buffer_pool_t *producer, audio_connection_t *connection) {
     return audio_i2s_connect_extra(producer, false, 2, 256, connection);
 }
@@ -216,7 +225,10 @@ bool audio_i2s_connect_extra(audio_buffer_pool_t *producer, bool buffer_on_give,
             printf("Converting mono to stereo at %d Hz\n", (int) producer->format->sample_freq);
 #endif
         }
-        connection = buffer_on_give ? &m2s_audio_i2s_pg_connection.core : &m2s_audio_i2s_ct_connection.core;
+        if (!buffer_count)
+            connection = &audio_i2s_pass_thru_connection.core;
+        else
+            connection = buffer_on_give ? &m2s_audio_i2s_pg_connection.core : &m2s_audio_i2s_ct_connection.core;
     }
     audio_complete_connection(connection, producer, audio_i2s_consumer);
     return true;
@@ -297,7 +309,12 @@ static inline void audio_start_dma_transfer() {
         DEBUG_PINS_XOR(audio_timing, 1);
         //DEBUG_PINS_XOR(audio_timing, 2);
         // just play some silence
-        ab = &silence_buffer;
+        static uint32_t zero;
+        dma_channel_config c = dma_get_channel_config(shared_state.dma_channel);
+        channel_config_set_read_increment(&c, false);
+        dma_channel_set_config(shared_state.dma_channel, &c, false);
+        dma_channel_transfer_from_buffer_now(shared_state.dma_channel, &zero, PICO_AUDIO_I2S_SILENCE_BUFFER_SAMPLE_LENGTH);
+        return;
     }
     assert(ab->sample_count);
     // todo better naming of format->format->format!!
@@ -309,6 +326,9 @@ static inline void audio_start_dma_transfer() {
     assert(ab->format->format->channel_count == 2);
     assert(ab->format->sample_stride == 4);
 #endif
+    dma_channel_config c = dma_get_channel_config(shared_state.dma_channel);
+    channel_config_set_read_increment(&c, true);
+    dma_channel_set_config(shared_state.dma_channel, &c, false);
     dma_channel_transfer_from_buffer_now(shared_state.dma_channel, ab->buffer->bytes, ab->sample_count);
 }
 
