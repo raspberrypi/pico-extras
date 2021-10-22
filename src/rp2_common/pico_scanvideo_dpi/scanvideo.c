@@ -1431,6 +1431,7 @@ bool scanvideo_setup_with_timing(const scanvideo_mode_t *mode, const scanvideo_t
 #else
     irq_set_priority(PIO0_IRQ_0, 0); // highest priority
     irq_set_priority(PIO0_IRQ_1, 0x40); // lower priority by 1
+    irq_set_priority(DMA_IRQ_0, 0x40); // higher than other crud
 #endif
 
     dma_claim_mask(PICO_SCANVIDEO_SCANLINE_DMA_CHANNELS_MASK);
