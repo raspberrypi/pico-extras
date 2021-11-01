@@ -265,6 +265,10 @@ void scanvideo_end_scanline_generation(scanvideo_scanline_buffer_t *scanline_buf
 
 typedef uint (*scanvideo_scanline_repeat_count_fn)(uint32_t scanline_id);
 void scanvideo_set_scanline_repeat_fn(scanvideo_scanline_repeat_count_fn fn);
+#if PICO_SCANVIDEO_SCANLINE_RELEASE_FUNCTION
+typedef void (*scanvideo_scanline_release_fn)();
+void scanvideo_set_scanline_release_fn(scanvideo_scanline_release_fn fn);
+#endif
 
 extern const scanvideo_timing_t vga_timing_640x480_60_default;
 extern const scanvideo_timing_t vga_timing_1280x1024_60_default;

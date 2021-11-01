@@ -341,6 +341,9 @@ static bool video_timing_enabled = false;
 static bool display_enabled = true;
 
 static scanvideo_scanline_repeat_count_fn _scanline_repeat_count_fn;
+#if PICO_SCANVIDEO_SCANLINE_RELEASE_FUNCTION
+static scanvideo_scanline_release_fn _scanline_release_fn;
+#endif
 
 inline static void list_prepend(full_scanline_buffer_t **phead, full_scanline_buffer_t *fsb) {
     scanline_assert(fsb);
@@ -466,6 +469,9 @@ inline static void free_local_free_list_irqs_enabled(full_scanline_buffer_t *loc
         spin_unlock(shared_state.free_list.lock, save);
         // note also this is useful for triggering scanvideo_wait_for_scanline_complete check
         __sev();
+#if PICO_SCANVIDEO_SCANLINE_RELEASE_FUNCTION
+        if (_scanline_release_fn) _scanline_release_fn();
+#endif
     }
 }
 
@@ -872,7 +878,6 @@ static void __video_time_critical_func(prepare_for_vblank_scanline_irqs_enabled)
 
     // because IRQs are enabled, we may obviously be pre-empted before or between either of these
     release_scanline_irqs_enabled(buffers_to_free_count, &local_free_list);
-
     free_local_free_list_irqs_enabled(local_free_list);
 
     if (signal) {
@@ -1040,7 +1045,6 @@ extern bool scanvideo_in_hblank() {
 extern bool scanvideo_in_vblank() {
     return *(volatile bool *) &shared_state.scanline.in_vblank;
 }
-
 
 static uint default_scanvideo_scanline_repeat_count_fn(uint32_t scanline_id) {
     return 1;
@@ -1254,6 +1258,13 @@ void scanvideo_set_scanline_repeat_fn(scanvideo_scanline_repeat_count_fn fn) {
     _scanline_repeat_count_fn = fn ? fn : default_scanvideo_scanline_repeat_count_fn;
 }
 
+#if PICO_SCANVIDEO_SCANLINE_RELEASE_FUNCTION
+void scanvideo_set_scanline_release_fn(scanvideo_scanline_release_fn fn) {
+    _scanline_release_fn = fn;
+}
+#endif
+
+
 bool scanvideo_setup(const scanvideo_mode_t *mode) {
     return scanvideo_setup_with_timing(mode, mode->default_timing);
 }
@@ -1377,7 +1388,7 @@ bool scanvideo_setup_with_timing(const scanvideo_mode_t *mode, const scanvideo_t
 #if PICO_SCANVIDEO_ENABLE_VIDEO_RECOVERY
     int program_wait_index = -1;
 #endif
-#if PICO_SCANVIDEO_ENABLE_VIDEO_RECOVERY || PARAM_ASSERTIONS_ENABLED(SCANVIDEO_DBI)
+#if PICO_SCANVIDEO_ENABLE_VIDEO_RECOVERY || PARAM_ASSERTIONS_ENABLED(SCANVIDEO_DPI)
     for (int i = 0; i < mode->pio_program->program->length; i++) {
         if (instructions[i] == PIO_WAIT_IRQ4) {
 #if PICO_SCANVIDEO_ENABLE_VIDEO_RECOVERY
