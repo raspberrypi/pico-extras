@@ -130,6 +130,8 @@ CU_REGISTER_DEBUG_PINS(video_timing, video_dma_buffer, video_irq, video_dma_comp
 
 // ======================
 
+#define GENERATING_LIST 1
+//#define PICO_SCANVIDEO_ENABLE_SCANLINE_ASSERTIONS 1
 #if PICO_SCANVIDEO_ENABLE_SCANLINE_ASSERTIONS
 // we want some sort of assertion even in release builds
 #ifndef NDEBUG
@@ -260,7 +262,7 @@ static struct {
         // locks (i.e. we are saving an extra lock in the latch case by not placing in a separate struct)
         full_scanline_buffer_t *generated_ascending_scanline_id_list;
         full_scanline_buffer_t *generated_ascending_scanline_id_list_tail;
-#if PICO_SCANVIDEO_ENABLE_SCANLINE_ASSERTIONS
+#if PICO_SCANVIDEO_ENABLE_SCANLINE_ASSERTIONS && GENERATING_LIST
         full_scanline_buffer_t *generating_list;
 #endif
     } scanline;
@@ -383,6 +385,7 @@ inline static full_scanline_buffer_t *list_remove_head_ascending(full_scanline_b
     full_scanline_buffer_t *fsb = *phead;
 
     if (fsb) {
+        scanline_assert(*ptail);
         *phead = fsb->next;
 
         if (!fsb->next) {
@@ -797,8 +800,9 @@ void __video_most_time_critical_func(prepare_for_active_scanline_irqs_enabled)()
         shared_state.scanline.current_scanline_buffer = NULL;
 #if PICO_SCANVIDEO_LINKED_SCANLINE_BUFFERS
     } else if (fsb->core.link_after && !--fsb->core.link_after) {
-        assert(fsb->core.link);
+        scanline_assert(fsb->core.link);
         spin_lock_unsafe_blocking(shared_state.in_use.lock);
+        scanline_assert(fsb->core.link);
         DEBUG_PINS_SET(video_link, 1);
         full_scanline_buffer_t *fsb2 = (full_scanline_buffer_t *)fsb->core.link;
         fsb->core.link = NULL; // the linkee scanline is now tracked on its own, so shouldn't be freed with the linker
@@ -1066,7 +1070,7 @@ extern scanvideo_scanline_buffer_t *__video_time_critical_func(scanvideo_begin_s
         if (fsb) {
             save = spin_lock_blocking(shared_state.scanline.lock);
             DEBUG_PINS_SET(video_timing, 1);
-#if PICO_SCANVIDEO_ENABLE_SCANLINE_ASSERTIONS
+#if PICO_SCANVIDEO_ENABLE_SCANLINE_ASSERTIONS && GENERATING_LIST
             list_prepend(&shared_state.scanline.generating_list, fsb);
 #endif
             // todo improve this algorithm... how far ahead should we be
@@ -1093,7 +1097,7 @@ extern scanvideo_scanline_buffer_t *__video_time_critical_func(scanvideo_begin_s
     DEBUG_PINS_CLR(video_link, 1);
     DEBUG_PINS_CLR(video_generation, 1);
 #if PICO_SCANVIDEO_LINKED_SCANLINE_BUFFERS
-    fsb->core.link_after = 0;
+    if (fsb) fsb->core.link_after = 0;
 #endif
     return (scanvideo_scanline_buffer_t *) fsb;
 }
@@ -1129,7 +1133,7 @@ scanvideo_scanline_buffer_t *__video_time_critical_func(scanvideo_begin_scanline
         {
             save = spin_lock_blocking(shared_state.scanline.lock);
             DEBUG_PINS_SET(video_timing, 1);
-#ifdef ENABLE_SCANLINE_ASSERTIONS
+#if PICO_SCANVIDEO_ENABLE_SCANLINE_ASSERTIONS && GENERATING_LIST
             list_prepend(&shared_state.scanline.generating_list, fsb);
             list_prepend(&shared_state.scanline.generating_list, fsb2);
 #endif
@@ -1202,7 +1206,7 @@ scanvideo_scanline_buffer_t *__video_time_critical_func(scanvideo_begin_scanline
             }
             save = spin_lock_blocking(shared_state.scanline.lock);
             DEBUG_PINS_SET(video_timing, 1);
-#if PICO_SCANVIDEO_ENABLE_SCANLINE_ASSERTIONS
+#if PICO_SCANVIDEO_ENABLE_SCANLINE_ASSERTIONS && GENERATING_LIST
             list_prepend(&shared_state.scanline.generating_list, fsb);
 #endif
             // todo improve this algorithm... how far ahead should we be
@@ -1233,7 +1237,7 @@ scanvideo_scanline_buffer_t *__video_time_critical_func(scanvideo_begin_scanline
 
     DEBUG_PINS_CLR(video_link, 1);
     DEBUG_PINS_CLR(video_generation, 1);
-    fsb->core.link_after = 0;
+    if (fsb) fsb->core.link_after = 0;
     return (scanvideo_scanline_buffer_t *) fsb;
 }
 #endif
@@ -1243,7 +1247,7 @@ extern void __video_time_critical_func(scanvideo_end_scanline_generation)(
     DEBUG_PINS_SET(video_generation, 2);
     full_scanline_buffer_t *fsb = (full_scanline_buffer_t *) scanline_buffer;
     uint32_t save = spin_lock_blocking(shared_state.scanline.lock);
-#if PICO_SCANVIDEO_ENABLE_SCANLINE_ASSERTIONS
+#if PICO_SCANVIDEO_ENABLE_SCANLINE_ASSERTIONS && GENERATING_LIST
     list_remove(&shared_state.scanline.generating_list, fsb);
 #endif
     list_insert_ascending(&shared_state.scanline.generated_ascending_scanline_id_list,
