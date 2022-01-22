@@ -1013,7 +1013,7 @@ void setup_sm(int sm, uint offset) {
         pin_count = 2;
 #endif
         sm_config_set_out_pins(&config, BASE, pin_count);
-#if PICO_SCANVIDEO_ENABLE_DEN_PIN
+#if PICO_SCANVIDEO_ENABLE_CLOCK_PIN
         // side set pin as well
         sm_config_set_sideset_pins(&config, BASE + pin_count);
         pin_count++;
@@ -1335,9 +1335,12 @@ bool scanvideo_setup_with_timing(const scanvideo_mode_t *mode, const scanvideo_t
     bi_decl_if_func_used(bi_1pin_with_name(PICO_SCANVIDEO_SYNC_PIN_BASE + 2, "Display Enable"));
     pin_mask |= 4u << PICO_SCANVIDEO_SYNC_PIN_BASE;
 #endif
-#if PICO_SCANVIDEO_ENABLE_CLOCK_PIN
+#if PICO_SCANVIDEO_ENABLE_CLOCK_PIN && PICO_SCANVIDEO_ENABLE_DEN_PIN
     bi_decl_if_func_used(bi_1pin_with_name(PICO_SCANVIDEO_SYNC_PIN_BASE + 3, "Pixel Clock"));
     pin_mask |= 8u << PICO_SCANVIDEO_SYNC_PIN_BASE;
+#elif PICO_SCANVIDEO_ENABLE_CLOCK_PIN
+    bi_decl_if_func_used(bi_1pin_with_name(PICO_SCANVIDEO_SYNC_PIN_BASE + 2, "Pixel Clock"));
+    pin_mask |= 4u << PICO_SCANVIDEO_SYNC_PIN_BASE;
 #endif
     static_assert(PICO_SCANVIDEO_PIXEL_RSHIFT + PICO_SCANVIDEO_PIXEL_RCOUNT <= PICO_SCANVIDEO_COLOR_PIN_COUNT, "red bits do not fit in color pins");
     static_assert(PICO_SCANVIDEO_PIXEL_GSHIFT + PICO_SCANVIDEO_PIXEL_GCOUNT <= PICO_SCANVIDEO_COLOR_PIN_COUNT, "green bits do not fit in color pins");
