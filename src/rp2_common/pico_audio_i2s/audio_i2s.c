@@ -216,8 +216,6 @@ bool audio_i2s_connect_extra(audio_buffer_pool_t *producer, bool buffer_on_give,
             printf("Copying stereo to stereo at %d Hz\n", (int) producer->format->sample_freq);
 #endif
 #endif
-            // todo we should support pass thru option anyway
-            printf("TODO... not completing stereo audio connection properly!\n");
         } else {
 #if PICO_AUDIO_I2S_MONO_OUTPUT
             printf("Copying mono to mono at %d Hz\n", (int) producer->format->sample_freq);
