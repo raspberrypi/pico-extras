@@ -559,6 +559,28 @@ static inline void release_scanline_irqs_enabled(int buffers_to_free_count,
     }
 }
 
+// Note that this is not a general purpose function. It must be called by a caller
+// who can guarantee that a DMA completion IRQ will not be taken during this method
+static inline void abort_all_dma_channels_assuming_no_irq_preemption() {
+    // the reason the above requirements are in place is that the DMA controller may cause
+    // a completion IRQ during (or immediately the abort). There are *slower* ways to
+    // work around it in software, but we want to suppress the IRQ afterwards anyway, so
+    // as long as the spurious IRQ doesn't get taken here, then the h/w issue is of no problem
+    dma_hw->abort = PICO_SCANVIDEO_SCANLINE_DMA_CHANNELS_MASK;
+    // note that relying on the abort bits is no longer safe, as it may get cleared before the spurious IRQ happens
+    //    // wait for abort(s) to complete
+    //    while (dma_hw->abort & PICO_SCANVIDEO_SCANLINE_DMA_CHANNELS_MASK) tight_loop_contents();
+    while (dma_channel_is_busy(PICO_SCANVIDEO_SCANLINE_DMA_CHANNEL)) tight_loop_contents();
+#if PICO_SCANVIDEO_PLANE_COUNT > 1
+    while (dma_channel_is_busy(PICO_SCANVIDEO_SCANLINE_DMA_CHANNEL2)) tight_loop_contents();
+#if PICO_SCANVIDEO_PLANE_COUNT > 2
+    while (dma_channel_is_busy(PICO_SCANVIDEO_SCANLINE_DMA_CHANNEL3)) tight_loop_contents();
+#endif
+#endif
+    // we don't want any pending completion IRQ which may have happened in the interim
+    dma_hw->ints0 = PICO_SCANVIDEO_SCANLINE_DMA_CHANNELS_MASK;
+}
+
 static inline bool update_dma_transfer_state_irqs_enabled(bool cancel_if_not_complete,
                                                           int *scanline_buffers_to_release) {
     uint32_t save = spin_lock_blocking(shared_state.dma.lock);
@@ -612,13 +634,9 @@ static inline bool update_dma_transfer_state_irqs_enabled(bool cancel_if_not_com
             shared_state.dma.buffers_to_release = 0;
             DEBUG_PINS_XOR(video_in_use, 4);
         }
-        dma_channel_abort(PICO_SCANVIDEO_SCANLINE_DMA_CHANNEL);
-#if PICO_SCANVIDEO_PLANE_COUNT > 1
-        dma_channel_abort(PICO_SCANVIDEO_SCANLINE_DMA_CHANNEL2);
-#if PICO_SCANVIDEO_PLANE_COUNT > 2
-        dma_channel_abort(PICO_SCANVIDEO_SCANLINE_DMA_CHANNEL3);
-#endif
-#endif
+        // note that we guarantee no IRQ preemption because this method is always called within some
+        // type of video IRQ handle, and of those the DMA IRQ is the lowest priority.
+        abort_all_dma_channels_assuming_no_irq_preemption();
 #else
         panic("need VIDEO_RECOVERY");
 #endif
@@ -630,13 +648,9 @@ static inline bool update_dma_transfer_state_irqs_enabled(bool cancel_if_not_com
         shared_state.dma.scanline_in_progress = 0;
         *scanline_buffers_to_release = shared_state.dma.buffers_to_release;
         shared_state.dma.buffers_to_release = 0;
-        dma_abort(PICO_SCANVIDEO_SCANLINE_DMA_CHANNEL);
-#if PICO_SCANVIDEO_PLANE_COUNT > 1
-        dma_abort(PICO_SCANVIDEO_SCANLINE_DMA_CHANNEL2);
-#if PICO_SCANVIDEO_PLANE_COUNT > 2
-        dma_channel_abort(PICO_SCANVIDEO_SCANLINE_DMA_CHANNEL3);
-#endif
-#endif
+        // note that we guarantee no IRQ preemption because this method is always called within some
+        // type of video IRQ handle, and of those the DMA IRQ is the lowest priority.
+        abort_all_dma_channels_assuming_no_irq_preemption();
     }
     spin_unlock(shared_state.dma.lock, save);
     return false;
@@ -1050,7 +1064,7 @@ extern bool scanvideo_in_vblank() {
     return *(volatile bool *) &shared_state.scanline.in_vblank;
 }
 
-static uint default_scanvideo_scanline_repeat_count_fn(uint32_t scanline_id) {
+static uint __no_inline_not_in_flash_func(default_scanvideo_scanline_repeat_count_fn)(uint32_t scanline_id) {
     return 1;
 }
 
@@ -1097,7 +1111,10 @@ extern scanvideo_scanline_buffer_t *__video_time_critical_func(scanvideo_begin_s
     DEBUG_PINS_CLR(video_link, 1);
     DEBUG_PINS_CLR(video_generation, 1);
 #if PICO_SCANVIDEO_LINKED_SCANLINE_BUFFERS
-    if (fsb) fsb->core.link_after = 0;
+    if (fsb) {
+        fsb->core.link = 0;
+        fsb->core.link_after = 0;
+    }
 #endif
     return (scanvideo_scanline_buffer_t *) fsb;
 }
