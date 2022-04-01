@@ -46,6 +46,7 @@ if (EXISTS ${LWIP_PATH}/${LWIP_TEST_PATH})
         ${LWIP_PATH}/src/netif/slipif.c
         ${LWIP_PATH}/src/apps/http/httpd.c
         ${LWIP_PATH}/src/apps/http/fs.c
+        ${LWIP_PATH}/src/apps/lwiperf/lwiperf.c
 
         ${CMAKE_CURRENT_LIST_DIR}/lwip_arch.c
     )
