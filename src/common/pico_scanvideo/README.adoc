@@ -6,7 +6,7 @@ pixels at this rate under program control, which is great because (given that th
 
 Actual framebuffers are not required (though can be used for modes that aren't too high resolution - 256K isn't a huge amount for a framebuffer), and because content is generated in time with the "beam", no double buffering is required.
 
-This library is _deliberately_ very low level, but gives you full control over everything. In the future we will likely add more convenience APIs for dealing with some common framebuffer formats. Note the https://github.com/raspberrypi/pico-playground/scanvideo/mandelbrot[mandelbrot] example actually does use a frame buffer that is taken care of by an IRQ handler leaving both cores for user work, if you want to look at that.
+This library is _deliberately_ very low level, but gives you full control over everything. In the future we will likely add more convenience APIs for dealing with some common framebuffer formats. Note the https://github.com/raspberrypi/pico-playground/tree/master/scanvideo/mandelbrot[mandelbrot] example actually does use a frame buffer that is taken care of by an IRQ handler leaving both cores for user work, if you want to look at that.
 
 == Types of display
 
@@ -61,7 +61,7 @@ while (true) {
 }
 ----
 
-Note the above can be done on both cores at once, as long as you check the scanline number rather than assuming they come in order, and protect any per frame work with a mutex (see the https://github.com/raspberrypi/pico-playground/scanvideo/svideo_minimal[scanvideo_minimal] example) to make sure both cores are working on the state for the right frame.
+Note the above can be done on both cores at once, as long as you check the scanline number rather than assuming they come in order, and protect any per frame work with a mutex (see the https://github.com/raspberrypi/pico-playground/tree/master/scanvideo/scanvideo_minimal[scanvideo_minimal] example) to make sure both cores are working on the state for the right frame.
 
 == Neat Features
 
