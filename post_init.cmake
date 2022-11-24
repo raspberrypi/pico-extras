@@ -9,6 +9,6 @@ pico_add_platform_library(pico_extras_included)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/src ${CMAKE_BINARY_DIR}/pico_extras/src)
 
 if (PICO_EXTRAS_TESTS_ENABLED OR PICO_EXTRAS_TOP_LEVEL_PROJECT)
-    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/test {CMAKE_BINARY_DIR}/pico_extras/test)
+    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/test ${CMAKE_BINARY_DIR}/pico_extras/test)
 endif ()
 
