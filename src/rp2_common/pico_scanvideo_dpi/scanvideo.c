@@ -1509,6 +1509,7 @@ bool scanvideo_setup_with_timing(const scanvideo_mode_t *mode, const scanvideo_t
                   1,
 #endif
                   false);
+    dma_channel_claim(PICO_SCANVIDEO_SCANLINE_DMA_CB_CHANNEL);
 #endif
 #if PICO_SCANVIDEO_PLANE_COUNT > 1
     channel_config = dma_channel_get_default_config(PICO_SCANVIDEO_SCANLINE_DMA_CHANNEL2);
@@ -1548,6 +1549,7 @@ bool scanvideo_setup_with_timing(const scanvideo_mode_t *mode, const scanvideo_t
                   1,
 #endif
                   false);
+    dma_channel_claim(PICO_SCANVIDEO_SCANLINE_DMA_CB_CHANNEL2);
 #endif
 #if PICO_SCANVIDEO_PLANE_COUNT > 2
 #if PICO_SCANVIDEO_PLANE3_FRAGMENT_DMA
