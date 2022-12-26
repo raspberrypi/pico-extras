@@ -198,18 +198,21 @@ static struct {
     int32_t v_total;
     int32_t v_pulse_start;
     int32_t v_pulse_end;
-    // todo replace with plain polarity
-    uint32_t vsync_bits_pulse;
-    uint32_t vsync_bits_no_pulse;
 
-    uint32_t a, a_vblank, b1, b2, c, c_vblank;
-    uint32_t vsync_bits;
     uint16_t dma_state_index;
+    uint16_t dma_state_mode;
     int32_t timing_scanline;
 } timing_state;
 
+
+#define DMA_STATE_MODE_COUNT 3
+#define DMA_STATE_MODE_V_ACTIVE       0
+#define DMA_STATE_MODE_V_BLANK        1 
+#define DMA_STATE_MODE_V_BLANK_PULSE  2 
+
 #define DMA_STATE_COUNT 4
-static uint32_t dma_states[DMA_STATE_COUNT];
+
+static uint32_t dma_states[DMA_STATE_MODE_COUNT][DMA_STATE_COUNT];
 
 // todo get rid of this altogether
 #undef PICO_SCANVIDEO_ENABLE_VIDEO_CLOCK_DOWN
@@ -903,16 +906,13 @@ static void __video_time_critical_func(prepare_for_vblank_scanline_irqs_enabled)
     }
 }
 
-#define setup_dma_states_vblank() if (true) { dma_states[0] = timing_state.a_vblank; dma_states[1] = timing_state.b1; dma_states[2] = timing_state.b2; dma_states[3] = timing_state.c_vblank; } else __builtin_unreachable()
-#define setup_dma_states_no_vblank() if (true) { dma_states[0] = timing_state.a; dma_states[1] = timing_state.b1; dma_states[2] = timing_state.b2; dma_states[3] = timing_state.c; } else __builtin_unreachable()
-
 static inline void top_up_timing_pio_fifo() {
     // todo better irq reset ... we are seeing irq get set again, handled in this loop, then we re-enter here when we don't need to
     // keep filling until SM3 TX is full
     while (!(video_pio->fstat & (1u << (PICO_SCANVIDEO_TIMING_SM + PIO_FSTAT_TXFULL_LSB)))) {
         DEBUG_PINS_XOR(video_irq, 1);
         DEBUG_PINS_XOR(video_irq, 1);
-        pio_sm_put(video_pio, PICO_SCANVIDEO_TIMING_SM, dma_states[timing_state.dma_state_index] | timing_state.vsync_bits);
+        pio_sm_put(video_pio, PICO_SCANVIDEO_TIMING_SM, dma_states[timing_state.dma_state_mode][timing_state.dma_state_index]);
         // todo simplify this now we have a1, a2, b, c
         // todo display enable (only goes positive on start of screen)
 
@@ -926,14 +926,14 @@ static inline void top_up_timing_pio_fifo() {
                 if (timing_state.timing_scanline >= timing_state.v_total) {
                     timing_state.timing_scanline = 0;
                     // active display - gives irq 0 and irq 4
-                    setup_dma_states_no_vblank();
+                    timing_state.dma_state_mode = DMA_STATE_MODE_V_ACTIVE; // In V Active Region
                 } else if (timing_state.timing_scanline <= timing_state.v_pulse_end) {
                     if (timing_state.timing_scanline == timing_state.v_active) {
-                        setup_dma_states_vblank();
+                        timing_state.dma_state_mode = DMA_STATE_MODE_V_BLANK; // In V Front Porch
                     } else if (timing_state.timing_scanline == timing_state.v_pulse_start) {
-                        timing_state.vsync_bits = timing_state.vsync_bits_pulse;
+                        timing_state.dma_state_mode = DMA_STATE_MODE_V_BLANK_PULSE; // In V Pulse
                     } else if (timing_state.timing_scanline == timing_state.v_pulse_end) {
-                        timing_state.vsync_bits = timing_state.vsync_bits_no_pulse;
+                        timing_state.dma_state_mode = DMA_STATE_MODE_V_BLANK; // In V Back Porch
                     }
                 }
             }
@@ -1576,9 +1576,6 @@ bool scanvideo_setup_with_timing(const scanvideo_mode_t *mode, const scanvideo_t
     timing_state.v_active = timing->v_active;
     timing_state.v_pulse_start = timing->v_active + timing->v_front_porch;
     timing_state.v_pulse_end = timing_state.v_pulse_start + timing->v_pulse;
-    const uint32_t vsync_bit = 0x40000000;
-    timing_state.vsync_bits_pulse = timing->v_sync_polarity ? 0 : vsync_bit;
-    timing_state.vsync_bits_no_pulse = timing->v_sync_polarity ? vsync_bit : 0;
 
     // these are read bitwise backwards (lsb to msb) by PIO pogram
 
@@ -1594,14 +1591,13 @@ bool scanvideo_setup_with_timing(const scanvideo_mode_t *mode, const scanvideo_t
 #define C_CMD SET_IRQ_SCANLINE
 #define C_CMD_VBLANK CLEAR_IRQ_SCANLINE
 
-    int h_sync_bit = timing->h_sync_polarity ? 0 : 1;
-    timing_state.a = timing_encode(A_CMD, 4, h_sync_bit);
+    const uint32_t hsync_bit = 0x00000001;  // HSYNC Pin 0
+    int hsync_bit_pulse = (timing->h_sync_polarity & 1) ? 0 : hsync_bit;
+    int hsync_bit_no_pulse = (timing->h_sync_polarity & 1) ? hsync_bit : 0;
+
     static_assert(HTIMING_MIN >= 4, "");
-    timing_state.a_vblank = timing_encode(A_CMD_VBLANK, 4, h_sync_bit);
-    int h_back_porch = timing->h_total - timing->h_front_porch - timing->h_pulse - timing->h_active;
 
     valid_params_if(SCANVIDEO_DPI, timing->h_pulse - 4 >= HTIMING_MIN);
-    timing_state.b1 = timing_encode(B1_CMD, timing->h_pulse - 4, h_sync_bit);
 
     // todo decide on what these should be - we should really be asserting the timings
     //
@@ -1611,15 +1607,70 @@ bool scanvideo_setup_with_timing(const scanvideo_mode_t *mode, const scanvideo_t
     //  (separate from the needs of setting the hsync pulse)
     valid_params_if(SCANVIDEO_DPI, timing->h_active >= HTIMING_MIN);
     //assert(timing->h_front_porch >= HTIMING_MIN);
+
+    int h_back_porch = timing->h_total - timing->h_front_porch - timing->h_pulse - timing->h_active;
+
     valid_params_if(SCANVIDEO_DPI, h_back_porch >= HTIMING_MIN);
     valid_params_if(SCANVIDEO_DPI, (timing->h_total - h_back_porch - timing->h_pulse) >= HTIMING_MIN);
-    timing_state.b2 = timing_encode(B2_CMD, h_back_porch, !h_sync_bit);
-    timing_state.c = timing_encode(C_CMD, timing->h_total - h_back_porch - timing->h_pulse, 4 | !h_sync_bit);
-    timing_state.c_vblank = timing_encode(C_CMD_VBLANK, timing->h_total - h_back_porch - timing->h_pulse, !h_sync_bit);
+
+    const uint32_t vsync_bit = 0x00000002;  // VSYNC Pin 1
+    uint32_t vsync_bit_pulse = timing->v_sync_polarity ? 0 : vsync_bit;
+    uint32_t vsync_bit_no_pulse = timing->v_sync_polarity ? vsync_bit : 0;
+
+    const uint32_t display_on_bit = 0x00000004;  // Display On?
+
+    // setup_dma_states_no_vblank()
+    dma_states[DMA_STATE_MODE_V_ACTIVE][0] 
+        = timing_encode(A_CMD, 4, hsync_bit_pulse | vsync_bit_no_pulse);
+    dma_states[DMA_STATE_MODE_V_ACTIVE][1] 
+        = timing_encode(B1_CMD, timing->h_pulse - 4, hsync_bit_pulse | vsync_bit_no_pulse);
+    dma_states[DMA_STATE_MODE_V_ACTIVE][2] 
+        = timing_encode(B2_CMD, h_back_porch, hsync_bit_no_pulse | vsync_bit_no_pulse);
+    dma_states[DMA_STATE_MODE_V_ACTIVE][3] 
+        = timing_encode(C_CMD, timing->h_total - h_back_porch - timing->h_pulse, display_on_bit | hsync_bit_no_pulse | vsync_bit_no_pulse);
+
+    // setup_dma_states_vblank
+    dma_states[DMA_STATE_MODE_V_BLANK][0] 
+        = timing_encode(A_CMD_VBLANK, 4, hsync_bit_pulse | vsync_bit_no_pulse); 
+    dma_states[DMA_STATE_MODE_V_BLANK][1] 
+        = timing_encode(B1_CMD, timing->h_pulse - 4, hsync_bit_pulse | vsync_bit_no_pulse); 
+    dma_states[DMA_STATE_MODE_V_BLANK][2] 
+        = timing_encode(B2_CMD, h_back_porch, hsync_bit_no_pulse | vsync_bit_no_pulse); 
+    dma_states[DMA_STATE_MODE_V_BLANK][3] 
+        = timing_encode(C_CMD_VBLANK, timing->h_total - h_back_porch - timing->h_pulse, hsync_bit_no_pulse | vsync_bit_no_pulse); 
+
+    // setup_dma_states_vblank() with pulse
+
+    if ((timing->h_sync_polarity & CSYNC_EXTEND) == CSYNC_EXTEND) {  // Widen HSYNC during VSYNC
+        // CSYNC : Extend HSYNC during VSYNC period, 4 then h_back_porch-4, then off for h_pulse
+        dma_states[DMA_STATE_MODE_V_BLANK_PULSE][0] = timing_encode(A_CMD_VBLANK, 4, hsync_bit_pulse | vsync_bit_pulse);
+        dma_states[DMA_STATE_MODE_V_BLANK_PULSE][1] = timing_encode(B1_CMD, h_back_porch-4, hsync_bit_pulse | vsync_bit_pulse);
+        dma_states[DMA_STATE_MODE_V_BLANK_PULSE][2] 
+            = timing_encode(B2_CMD, timing->h_total - h_back_porch - timing->h_pulse, hsync_bit_pulse | vsync_bit_pulse);
+        dma_states[DMA_STATE_MODE_V_BLANK_PULSE][3] 
+            = timing_encode(C_CMD_VBLANK, timing->h_pulse, hsync_bit_no_pulse | vsync_bit_pulse);
+    } else if ((timing->h_sync_polarity & CSYNC_SUPPRESS) == CSYNC_SUPPRESS) {
+        // CSYNC : HSYNC pulse overriden by VSYNC pulse
+        dma_states[DMA_STATE_MODE_V_BLANK_PULSE][0] = timing_encode(A_CMD_VBLANK, 4, hsync_bit_pulse | vsync_bit_pulse);
+        dma_states[DMA_STATE_MODE_V_BLANK_PULSE][1] = timing_encode(B1_CMD, timing->h_pulse - 4, hsync_bit_pulse | vsync_bit_pulse);
+        dma_states[DMA_STATE_MODE_V_BLANK_PULSE][2] = timing_encode(B2_CMD, h_back_porch, hsync_bit_pulse | vsync_bit_pulse);
+        dma_states[DMA_STATE_MODE_V_BLANK_PULSE][3] 
+            = timing_encode(C_CMD_VBLANK, timing->h_total - h_back_porch - timing->h_pulse, hsync_bit_pulse | vsync_bit_pulse);
+    } else
+    {
+        // Seperate SYNC : HSYNC pulse for 4 then hsync_bit_pulse-4
+        dma_states[DMA_STATE_MODE_V_BLANK_PULSE][0] = timing_encode(A_CMD_VBLANK, 4, hsync_bit_pulse | vsync_bit_pulse);
+        dma_states[DMA_STATE_MODE_V_BLANK_PULSE][1] = timing_encode(B1_CMD, timing->h_pulse - 4, hsync_bit_pulse | vsync_bit_pulse);
+        dma_states[DMA_STATE_MODE_V_BLANK_PULSE][2] = timing_encode(B2_CMD, h_back_porch, hsync_bit_no_pulse | vsync_bit_pulse);
+        dma_states[DMA_STATE_MODE_V_BLANK_PULSE][3] 
+            = timing_encode(C_CMD_VBLANK, timing->h_total - h_back_porch - timing->h_pulse, hsync_bit_no_pulse | vsync_bit_pulse);
+    }
 
     // this is two scanlines in vblank
-    setup_dma_states_vblank();
-    timing_state.vsync_bits = timing_state.vsync_bits_no_pulse;
+    timing_state.dma_state_index = 0;
+    timing_state.dma_state_mode = DMA_STATE_MODE_V_BLANK;
+
+    // Build the DMA States
     scanvideo_set_scanline_repeat_fn(NULL);
     return true;
 }

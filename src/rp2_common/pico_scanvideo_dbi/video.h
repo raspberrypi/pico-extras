@@ -63,6 +63,12 @@ extern "C" {
 // most likely 24000000
 extern const uint32_t vga_clock_freq;
 
+// Apply CSYNC flag to HSYNC polarity
+//  - Extend   : Extends HSYNC during VSYNC pulse period
+//  - Suppress : HSYNC inhibit during VSYNC period
+#define CSYNC_EXTEND 2
+#define CSYNC_SUPPRESS 4
+
 // todo pragma pack?
 struct video_timing
 {
