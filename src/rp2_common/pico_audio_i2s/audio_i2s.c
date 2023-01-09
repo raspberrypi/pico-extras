@@ -367,6 +367,12 @@ void audio_i2s_set_enabled(bool enabled) {
 
         if (enabled) {
             audio_start_dma_transfer();
+        } else {
+            // if there was a buffer in flight, it will not be freed by DMA IRQ, let's do it manually
+            if (shared_state.playing_buffer) {
+                give_audio_buffer(audio_i2s_consumer, shared_state.playing_buffer);
+                shared_state.playing_buffer = NULL;
+            }
         }
 
         pio_sm_set_enabled(audio_pio, shared_state.pio_sm, enabled);
