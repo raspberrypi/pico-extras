@@ -9,7 +9,7 @@ See [pico-playground](https://github.com/raspberrypi/pico-playground) for builda
 Library|Description 
 ---|---
 [hardware_rosc](src/rp2_common/hardware_rosc)| API for the ring oscillator
-[lwip](src/rp2_common/lwip)| [LWIP Lightweight IP Library](https://savannah.nongnu.org/projects/lwip/) packed as an INTERFACE library for use with the Pico SDK
+[lwip](src/rp2_common/lwip)| Deprecated as of SDK 1.5.0; use `pico_lwip` and `pico_lwip_arch` from the SDK instead. 
 [pico_audio](src/common/pico_audio)|Audio output support; this is highly functional, but the API is subject to change 
 &nbsp;&nbsp;&nbsp;[pico_audio_i2s](src/rp2_common/pico_audio_i2s)|Audio output via I2S on 3 GPIOs using PIO. Arbitrary frequency
 &nbsp;&nbsp;&nbsp;[pico_audio_pwm](src/rp2_common/pico_audio_pwm)|Audio output via (PIO) PWM. Currently a bit limited in frequency support (it was developed on FPGA to do 22050Hz at 48Mhz system clock). It does however support error diffusion dithering and noise shaping with 16x oversampling to give surprisingly good audio quality. This code will be split to provide both a fixed frequencie(s) version and a slightly slower but rather better arbitrary frequency version supporting ever higher carrier frequencies 
