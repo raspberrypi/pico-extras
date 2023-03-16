@@ -1383,11 +1383,11 @@ bool scanvideo_setup_with_timing(const scanvideo_mode_t *mode, const scanvideo_t
     uint sys_clk = clock_get_hz(clk_sys);
     video_clock_down_times_2 = sys_clk / timing->clock_freq;
 #if PICO_SCANVIDEO_ENABLE_CLOCK_PIN
-    if (video_clock_down_times_2 * timing->clock_freq != sys_clk) {
+    if (timing->clock_freq != sys_clk / video_clock_down_times_2) {
         panic("System clock (%d) must be an integer multiple of 2 times the requested pixel clock (%d).", sys_clk, timing->clock_freq);
     }
 #else
-    if (video_clock_down_times_2 * timing->clock_freq != sys_clk) {
+    if (timing->clock_freq != sys_clk / video_clock_down_times_2) {
         panic("System clock (%d) must be an integer multiple of the requested pixel clock (%d).", sys_clk, timing->clock_freq);
     }
 #endif
