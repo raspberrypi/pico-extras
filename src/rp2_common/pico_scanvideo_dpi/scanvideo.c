@@ -4,17 +4,18 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#pragma GCC push_options
+#include <stdlib.h>
+#include <stdio.h>
+#include "pico.h"
+
+GCC_Pragma("GCC push_options")
 
 #if !PICO_SCANVIDEO_DEBUG_IMPL
 #undef PARAM_ASSERTIONS_DISABLE_ALL
 #define PARAM_ASSERTIONS_DISABLE_ALL 1
-#pragma GCC optimize("O3")
+GCC_Pragma("GCC optimize(\"O3\")")
 #endif
 
-#include <stdlib.h>
-#include <stdio.h>
-#include "pico/platform.h"
 #include "pico/sem.h"
 #include "pico/util/buffer.h"
 #include "hardware/clocks.h"
@@ -1855,4 +1856,4 @@ void validate_scanline(const uint32_t *dma_data, uint dma_data_size,
 }
 #endif
 
-#pragma GCC pop_options
+GCC_Pragma("GCC pop_options")

@@ -20,19 +20,19 @@ public:
     typedef _sample_t sample_t;
 };
 
-typedef struct : public FmtDetails<uint8_t> {
-} FmtU8;
+struct FmtU8 : public FmtDetails<uint8_t> {
+};
 
-typedef struct : public FmtDetails<int8_t> {
-} FmtS8;
+struct FmtS8 : public FmtDetails<int8_t> {
+};
 
-typedef struct : public FmtDetails<uint16_t> {
-} FmtU16;
+struct FmtU16 : public FmtDetails<uint16_t> {
+};
 
-typedef struct : public FmtDetails<int16_t> {
-} FmtS16;
+struct FmtS16 : public FmtDetails<int16_t> {
+};
 
-// Multi channel is just N samples back to back
+// Multi-channel is just N samples back to back
 template<typename Fmt, uint ChannelCount>
 struct MultiChannelFmt {
     static const uint channel_count = ChannelCount;

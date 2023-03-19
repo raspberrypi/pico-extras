@@ -92,7 +92,7 @@
 
 .macro shuffle_7_bytes_to_8 tmp_a tmp_b
 #ifndef VIDEO_DBI
-    ldr \tmp_b, =#0xff018401
+    ldr \tmp_b, =0xff018401
     lsls \tmp_a, \tmp_b, #16
     ands \tmp_b, r_bottom
     ands \tmp_a, r_top
@@ -107,7 +107,7 @@
     orrs \tmp_b, \tmp_a
     orrs r_bottom, \tmp_b
 #else
-    ldr \tmp_b, =#0xff210821
+    ldr \tmp_b, =0xff210821
     lsls \tmp_a, \tmp_b, #16
     ands \tmp_b, r_bottom
     ands \tmp_a, r_top
@@ -203,7 +203,7 @@
     subs r1, r_output
     mov r_row_delta, r1
     // todo assert r_interps is r1
-    ldr r_interps, =#SIO_BASE + SIO_INTERP0_ACCUM0_OFFSET
+    ldr r_interps, =SIO_BASE + SIO_INTERP0_ACCUM0_OFFSET
     // todo assert r_source is r2
     mov r_output_end, r3
 

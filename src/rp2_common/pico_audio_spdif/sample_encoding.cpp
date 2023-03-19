@@ -14,8 +14,8 @@
 static_assert(8 == sizeof(spdif_subframe_t), "");
 
 // subframe within SPDIF
-typedef struct : public FmtDetails<spdif_subframe_t> {
-} FmtSPDIF;
+struct FmtSPDIF : public FmtDetails<spdif_subframe_t> {
+};
 
 template<typename FromFmt>
 struct converting_copy<Stereo<FmtSPDIF>, Stereo<FromFmt>> {
