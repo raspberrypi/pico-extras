@@ -52,16 +52,27 @@ const audio_format_t *audio_i2s_setup(const audio_format_t *intended_audio_forma
     gpio_set_function(config->clock_pin_base, func);
     gpio_set_function(config->clock_pin_base + 1, func);
 
-    uint8_t sm = shared_state.pio_sm = config->pio_sm;
-    pio_sm_claim(audio_pio, sm);
+    uint8_t sm = config->pio_sm;
+    if (sm == 0xFF) {
+        sm = pio_claim_unused_sm(audio_pio, true);
+    } else {
+        pio_sm_claim(audio_pio, sm);
+    }
+
+    shared_state.pio_sm = sm;
 
     uint offset = pio_add_program(audio_pio, &audio_i2s_program);
 
     audio_i2s_program_init(audio_pio, sm, offset, config->data_pin, config->clock_pin_base);
 
     __mem_fence_release();
+
     uint8_t dma_channel = config->dma_channel;
-    dma_channel_claim(dma_channel);
+    if(dma_channel == 0xFF) {
+        dma_channel = dma_claim_unused_channel(true);
+    } else {
+        dma_channel_claim(dma_channel);
+    }
 
     shared_state.dma_channel = dma_channel;
 

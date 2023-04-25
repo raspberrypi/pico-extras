@@ -223,8 +223,14 @@ const audio_format_t *audio_pwm_setup(const audio_format_t *intended_audio_forma
 
         gpio_set_function(config->core.base_pin, GPIO_FUNC_PIOx);
 
-        uint8_t sm = shared_state.pio_sm[ch] = config->core.pio_sm;
-        pio_sm_claim(audio_pio, sm);
+        uint8_t sm = config->core.pio_sm;
+        if (sm == 0xFF) {
+            sm = pio_claim_unused_sm(audio_pio, true);
+        } else {
+            pio_sm_claim(audio_pio, sm);
+        }
+
+        shared_state.pio_sm[ch] = sm;
 
         pio_sm_config sm_config = audio_program_get_default_config(offset);
         sm_config_set_out_pins(&sm_config, config->core.base_pin, 1);
@@ -241,7 +247,11 @@ const audio_format_t *audio_pwm_setup(const audio_format_t *intended_audio_forma
         pio_sm_exec(audio_pio, sm, pio_encode_jmp(offset + audio_entry_point)); // jmp to ep
 
         uint8_t dma_channel = config->core.dma_channel;
-        dma_channel_claim(dma_channel);
+        if(dma_channel == 0xFF) {
+            dma_channel = dma_claim_unused_channel(true);
+        } else {
+            dma_channel_claim(dma_channel);
+        }
 
         shared_state.dma_channel[ch] = dma_channel;
 
