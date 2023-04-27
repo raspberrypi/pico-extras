@@ -14,6 +14,8 @@ The API is currently very focused for `pico_scanvideo_dpi` which outputs paralle
 pins for DPI (via resistor DAC) VGA. In this case, whilst the monitor requires accurate timing (for VGA), the timing is fully under control of the RP2040. (note by convention color is generally
 5:5:5 RGB)
 
+There is a reference design for a VGA board based on the RP2040 in the https://datasheets.raspberrypi.com/rp2040/hardware-design-with-rp2040.pdf[Hardware design with RP2040] datasheet.
+
 `pico-scanvideo-dbi` is a (previous proof of concept - currently non-compiling) version for 16 bit MIPI DBI displays, where the data is still clocked out in parallel (though the actual timing is less critical than with signals intended for monitors). In the case of GRAM based displas, this just copies data at high speed into the GRAM, so double-buffering, or tearing support is necessary depending on the type of video your are displaying
 
 `pico-scanvideo-dvi` is not yet present, but is conceptually similar to DPI
