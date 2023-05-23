@@ -735,6 +735,9 @@ void __video_most_time_critical_func(prepare_for_active_scanline_irqs_enabled)()
 #if PICO_SCANVIDEO_ENABLE_VIDEO_RECOVERY
     if (!pio_sm_is_tx_fifo_empty(video_pio, PICO_SCANVIDEO_SCANLINE_SM)) {
         pio_sm_clear_fifos(video_pio, PICO_SCANVIDEO_SCANLINE_SM);
+        // if there wsa something in the FIFO, then there's a good chance there's a possibility that there was something
+        // in the OSR still, too
+        pio_sm_exec(video_pio, PICO_SCANVIDEO_SCANLINE_SM, pio_encode_out(pio_null, 32));
     }
     if (video_pio->sm[PICO_SCANVIDEO_SCANLINE_SM].instr != PIO_WAIT_IRQ4) {
         // hmm the problem here is we don't know if we should wait or not, because that is purely based on timing..
@@ -744,7 +747,12 @@ void __video_most_time_critical_func(prepare_for_active_scanline_irqs_enabled)()
         // - id irq already posted, and we don't wait: GOOD
         pio_sm_exec(video_pio, PICO_SCANVIDEO_SCANLINE_SM, pio_encode_wait_irq(1, false, 4));
         if (pio_sm_is_exec_stalled(video_pio, PICO_SCANVIDEO_SCANLINE_SM)) {
-            pio_sm_exec(video_pio, PICO_SCANVIDEO_SCANLINE_SM, pio_encode_jmp(shared_state.scanline_program_wait_index));
+            // special case check that we are have actually presumably seen the IRQ, but are blocked on the OUT after it, in
+            // which case we don't want to block again
+            if (video_pio->sm[PICO_SCANVIDEO_SCANLINE_SM].addr != shared_state.scanline_program_wait_index + 1) {
+                pio_sm_exec(video_pio, PICO_SCANVIDEO_SCANLINE_SM,
+                            pio_encode_jmp(shared_state.scanline_program_wait_index));
+            }
         } else {
             pio_sm_exec(video_pio, PICO_SCANVIDEO_SCANLINE_SM,
                         pio_encode_jmp(shared_state.scanline_program_wait_index + 1));
