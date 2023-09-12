@@ -123,6 +123,12 @@ extern "C" {
 // most likely 24000000
 extern const uint32_t video_clock_freq;
 
+// Apply CSYNC flag to HSYNC polarity
+//  - Extend   : Extends HSYNC during VSYNC pulse period
+//  - Suppress : HSYNC inhibit during VSYNC period
+#define CSYNC_EXTEND 2
+#define CSYNC_SUPPRESS 4
+
 // todo pragma pack?
 typedef struct scanvideo_timing {
     uint32_t clock_freq;
