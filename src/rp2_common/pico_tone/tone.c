@@ -31,8 +31,4 @@ void tone(uint gpio, uint freq, uint32_t duration_ms) {
     // Configure duty to 50% ((2**16)-1)/2) to generate a square wave
     pwm_set_gpio_level(gpio, 32768U);
     sleep_ms(duration_ms);
-
-    // Make silence for some ms to distinguish between tones
-    no_tone(gpio);
-    sleep_ms(PICO_TONE_SILENCE_DELAY_MS);
 }

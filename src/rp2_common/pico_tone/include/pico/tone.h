@@ -28,11 +28,6 @@ extern "C" {
  *       - https://www.hackster.io/106958/pwm-sound-synthesis-9596f0#overview
  */
 
-// PICO_TONE_SILENCE_DELAY_MS, Default delay between tones in milliseconds
-#ifndef PICO_TONE_SILENCE_DELAY_MS
-#define PICO_TONE_SILENCE_DELAY_MS 10U
-#endif
-
 /*! \brief Initialise the tone generator
  *  \ingroup pico_tone
  *
