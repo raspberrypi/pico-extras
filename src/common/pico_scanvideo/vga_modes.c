@@ -610,3 +610,36 @@ const scanvideo_mode_t vga_mode_1280x1024_60 =
                 .xscale = 1,
                 .yscale = 1,
         };
+
+const scanvideo_timing_t vga_timing_1920x1440_60_default =
+        {
+                .clock_freq = 234000000,
+
+                .h_active = 1920,
+                .v_active = 1440,
+
+                .h_front_porch = 128,
+                .h_pulse = 208,
+                .h_total = 2600,
+                .h_sync_polarity = 1,
+
+                .v_front_porch = 1,
+                .v_pulse = 3,
+                .v_total = 1500,
+                .v_sync_polarity = 0,
+
+                .enable_clock = 0,
+                .clock_polarity = 0,
+
+                .enable_den = 0
+        };
+
+const scanvideo_mode_t vga_mode_1440p_60 =
+        {
+                .default_timing = &vga_timing_1920x1440_60_default,
+                .pio_program = &video_24mhz_composable,
+                .width = 1920,
+                .height = 1440,
+                .xscale = 1,
+                .yscale = 1,
+        };

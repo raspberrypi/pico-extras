@@ -5,8 +5,8 @@ if (NOT TARGET _pico_extras_inclusion_marker)
 
     # Pull in PICO SDK (must be before project)
     include(pico_sdk_import.cmake)
-    if (PICO_SDK_VERSION_STRING VERSION_LESS "1.2.0")
-        message(FATAL_ERROR "Require at least Raspberry Pi Pico SDK version 1.2.0")
+    if (PICO_SDK_VERSION_STRING VERSION_LESS "2.0.0")
+        message(FATAL_ERROR "Require at least Raspberry Pi Pico SDK version 2.0.0")
     endif()
 
     project(pico_extras C CXX)

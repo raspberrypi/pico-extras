@@ -568,14 +568,18 @@ static inline void abort_all_dma_channels_assuming_no_irq_preemption() {
     // work around it in software, but we want to suppress the IRQ afterwards anyway, so
     // as long as the spurious IRQ doesn't get taken here, then the h/w issue is of no problem
     dma_hw->abort = PICO_SCANVIDEO_SCANLINE_DMA_CHANNELS_MASK;
-    // note that relying on the abort bits is no longer safe, as it may get cleared before the spurious IRQ happens
-    //    // wait for abort(s) to complete
-    //    while (dma_hw->abort & PICO_SCANVIDEO_SCANLINE_DMA_CHANNELS_MASK) tight_loop_contents();
+    // note that relying on the abort bits is not safe on RP2040, as it may get cleared before the spurious IRQ happens
+    // wait for abort(s) to complete
+#if !PICO_RP2040
+    // fixed after RP2040
+    while (dma_hw->abort & PICO_SCANVIDEO_SCANLINE_DMA_CHANNELS_MASK) tight_loop_contents();
+#else
     while (dma_channel_is_busy(PICO_SCANVIDEO_SCANLINE_DMA_CHANNEL)) tight_loop_contents();
 #if PICO_SCANVIDEO_PLANE_COUNT > 1
     while (dma_channel_is_busy(PICO_SCANVIDEO_SCANLINE_DMA_CHANNEL2)) tight_loop_contents();
 #if PICO_SCANVIDEO_PLANE_COUNT > 2
     while (dma_channel_is_busy(PICO_SCANVIDEO_SCANLINE_DMA_CHANNEL3)) tight_loop_contents();
+#endif
 #endif
 #endif
     // we don't want any pending completion IRQ which may have happened in the interim
@@ -740,6 +744,7 @@ void __video_most_time_critical_func(prepare_for_active_scanline_irqs_enabled)()
         pio_sm_exec(video_pio, PICO_SCANVIDEO_SCANLINE_SM, pio_encode_out(pio_null, 32));
     }
     if (video_pio->sm[PICO_SCANVIDEO_SCANLINE_SM].instr != PIO_WAIT_IRQ4) {
+        // we don't know where we were, so me should also make sure OSR is empty, we certainly haven't sent any data yet
         // hmm the problem here is we don't know if we should wait or not, because that is purely based on timing..
         // - if irq not posted, and we wait: GOOD
         // - if irq not posted and we don't wait: BAD. early line

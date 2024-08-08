@@ -185,6 +185,14 @@ const uint32_t* platypus_decompress_row(uint32_t *d0, uint32_t *d1, const uint32
 
 #else
 void platypus_decompress_configure_interp(bool is_b) {
+#if PLATYPUS_TABLES_MAIN_RAM
+    extern uint32_t shared_222_table, shared_5_table;
+    uint32_t row_5 = (uintptr_t)&shared_5_table;
+    interp0->base[0] = row_5;
+    interp0->base[1] = row_5;
+    interp1->base[0] = row_5;
+    interp1->base[1] = (uintptr_t)&shared_222_table;
+#else
     extern uint32_t platypus_decompress_row_asm_a_222_table, platypus_decompress_row_asm_a_5_table;
     extern uint32_t platypus_decompress_row_asm_b_222_table, platypus_decompress_row_asm_b_5_table;
     uint32_t row_5 = (uintptr_t)(is_b?&platypus_decompress_row_asm_b_5_table:&platypus_decompress_row_asm_a_5_table);
@@ -192,6 +200,7 @@ void platypus_decompress_configure_interp(bool is_b) {
     interp0->base[1] = row_5;
     interp1->base[0] = row_5;
     interp1->base[1] = (uintptr_t)(is_b?&platypus_decompress_row_asm_b_222_table:&platypus_decompress_row_asm_a_222_table);
+#endif
 #ifndef VIDEO_DBI
     const uint es_555 = 0;
     const uint es_222 = 0;

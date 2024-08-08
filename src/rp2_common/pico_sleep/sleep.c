@@ -43,7 +43,7 @@ void sleep_run_from_dormant_source(dormant_source_t dormant_source) {
     _dormant_source = dormant_source;
 
     // FIXME: Just defining average rosc freq here.
-    uint src_hz = (dormant_source == DORMANT_SOURCE_XOSC) ? XOSC_MHZ * MHZ : 6.5 * MHZ;
+    uint src_hz = (dormant_source == DORMANT_SOURCE_XOSC) ? XOSC_HZ : 6.5 * MHZ;
     uint clk_ref_src = (dormant_source == DORMANT_SOURCE_XOSC) ?
                        CLOCKS_CLK_REF_CTRL_SRC_VALUE_XOSC_CLKSRC :
                        CLOCKS_CLK_REF_CTRL_SRC_VALUE_ROSC_CLKSRC_PH;
