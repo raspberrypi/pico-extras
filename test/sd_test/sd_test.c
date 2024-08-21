@@ -10,6 +10,7 @@
 
 #include "pico/stdlib.h"
 #include "pico/sd_card.h"
+#include "hardware/clocks.h"
 
 static uint8_t sector_data[1024];
 
