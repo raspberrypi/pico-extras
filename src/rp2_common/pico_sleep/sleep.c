@@ -237,7 +237,9 @@ void sleep_goto_aon_dormant_until(struct timespec *ts, aon_timer_alarm_handler_t
     clocks_hw->sleep_en1 = 0x0;
 #else
     assert(_dormant_source == DORMANT_SOURCE_LPOSC);
+    uint64_t restore_ms = powman_timer_get_ms();
     powman_timer_set_1khz_tick_source_lposc();
+    powman_timer_set_ms(restore_ms);
 
     clocks_hw->sleep_en0 = CLOCKS_SLEEP_EN0_CLK_REF_POWMAN_BITS;
     clocks_hw->sleep_en1 = 0x0;
@@ -294,7 +296,9 @@ void sleep_power_up(void)
 
 #if PICO_RP2350
     // make powerman use xosc again
+    uint64_t restore_ms = powman_timer_get_ms();
     powman_timer_set_1khz_tick_source_xosc();
+    powman_timer_set_ms(restore_ms);
 #endif
 
     // UART needs to be reinitialised with the new clock frequencies for stable output
