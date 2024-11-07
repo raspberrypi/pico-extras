@@ -156,7 +156,7 @@ static void processor_deep_sleep(void) {
 #endif
 }
 
-void sleep_goto_aon_sleep_until(struct timespec *ts, aon_timer_alarm_handler_t callback)
+void sleep_goto_sleep_until(struct timespec *ts, aon_timer_alarm_handler_t callback)
 {
 
     // We should have already called the sleep_run_from_dormant_source function
@@ -173,6 +173,8 @@ void sleep_goto_aon_sleep_until(struct timespec *ts, aon_timer_alarm_handler_t c
 
     aon_timer_enable_alarm(ts, callback, false);
 
+    stdio_flush();
+
     // Enable deep sleep at the proc
     processor_deep_sleep();
 
@@ -180,7 +182,7 @@ void sleep_goto_aon_sleep_until(struct timespec *ts, aon_timer_alarm_handler_t c
     __wfi();
 }
 
-void sleep_goto_sleep_for(uint32_t delay_ms, hardware_alarm_callback_t callback, int *alarm_id)
+bool sleep_goto_sleep_for(uint32_t delay_ms, hardware_alarm_callback_t callback)
 {
     // We should have already called the sleep_run_from_dormant_source function
     // This is only needed for dormancy although it saves power running from xosc while sleeping
@@ -197,26 +199,22 @@ void sleep_goto_sleep_for(uint32_t delay_ms, hardware_alarm_callback_t callback,
 #endif
 
     int alarm_num = hardware_alarm_claim_unused(true);
-
-    // Return the timer alarm irq number (0..3) so it can be disabled and freed from the main program
-    *alarm_id = alarm_num;
-
-    uart_default_tx_wait_blocking();
-
     hardware_alarm_set_callback(alarm_num, callback);
     absolute_time_t t = make_timeout_time_ms(delay_ms);
     if (hardware_alarm_set_target(alarm_num, t)) {
         hardware_alarm_set_callback(alarm_num, NULL);
         hardware_alarm_unclaim(alarm_num);
-        *alarm_id = -1;
-        return;
+        return false;
     }
+
+    stdio_flush();
 
     // Enable deep sleep at the proc
     processor_deep_sleep();
 
     // Go to sleep
     __wfi();
+    return true;
 }
 
 static void _go_dormant(void) {
@@ -229,7 +227,7 @@ static void _go_dormant(void) {
     }
 }
 
-void sleep_goto_aon_dormant_until(struct timespec *ts, aon_timer_alarm_handler_t callback)   {
+void sleep_goto_dormant_until(struct timespec *ts, aon_timer_alarm_handler_t callback)   {
     // We should have already called the sleep_run_from_dormant_source function
 
 #if PICO_RP2040
@@ -247,6 +245,8 @@ void sleep_goto_aon_dormant_until(struct timespec *ts, aon_timer_alarm_handler_t
 
     // Set the AON timer to wake up the proc from dormant mode
     aon_timer_enable_alarm(ts, callback, true);
+
+    stdio_flush();
 
     // Enable deep sleep at the proc
     processor_deep_sleep();
@@ -285,7 +285,7 @@ void sleep_goto_dormant_until_pin(uint gpio_pin, bool edge, bool high) {
 void sleep_power_up(void)
 {
     // Re-enable the ring oscillator, which will essentially kickstart the proc
-    rosc_restart();
+    rosc_enable();
 
     // Reset the sleep enable register so peripherals and other hardware can be used
     clocks_hw->sleep_en0 |= ~(0u);

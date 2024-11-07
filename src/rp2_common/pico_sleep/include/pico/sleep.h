@@ -54,7 +54,7 @@ static inline void sleep_run_from_xosc(void) {
 }
 
 #if !PICO_RP2040
-static inline void sleep_run_from_lpsc(void) {
+static inline void sleep_run_from_lposc(void) {
     sleep_run_from_dormant_source(DORMANT_SOURCE_LPOSC);
 }
 #endif
@@ -74,7 +74,7 @@ static inline void sleep_run_from_rosc(void) {
  * \param ts The time to wake up
  * \param callback Function to call on wakeup.
  */
-void sleep_goto_aon_sleep_until(struct timespec *ts, aon_timer_alarm_handler_t callback);
+void sleep_goto_sleep_until(struct timespec *ts, aon_timer_alarm_handler_t callback);
 
 /*! \brief Send system to sleep for a specified duration in milliseconds. This provides an alternative to sleep_goto_sleep_until
 to allow for shorter duration sleeps.
@@ -84,8 +84,9 @@ to allow for shorter duration sleeps.
  *
  * \param delay_ms The duration to sleep for in milliseconds.
  * \param callback Function to call on wakeup.
+ * \return Returns true if the device went to sleep
  */
-void sleep_goto_sleep_for(uint32_t delay_ms, hardware_alarm_callback_t callback, int* alarm_id);
+bool sleep_goto_sleep_for(uint32_t delay_ms, hardware_alarm_callback_t callback);
 
 /*! \brief Send system to dormant until the specified time, note for RP2040 the RTC must be driven by an external clock
  *  \ingroup hardware_sleep
@@ -95,7 +96,7 @@ void sleep_goto_sleep_for(uint32_t delay_ms, hardware_alarm_callback_t callback,
  * \param ts The time to wake up
  * \param callback Function to call on wakeup.
  */
-void sleep_goto_aon_dormant_until(struct timespec *ts, aon_timer_alarm_handler_t callback);
+void sleep_goto_dormant_until(struct timespec *ts, aon_timer_alarm_handler_t callback);
 
 /*! \brief Send system to sleep until the specified GPIO changes
  *  \ingroup hardware_sleep

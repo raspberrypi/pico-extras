@@ -83,7 +83,7 @@ inline static void rosc_write(io_rw_32 *addr, uint32_t value) {
     assert(rosc_write_okay());
 };
 
-void rosc_restart(void);
+void rosc_enable(void);
 
 #ifdef __cplusplus
 }
