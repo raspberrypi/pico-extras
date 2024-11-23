@@ -1045,10 +1045,13 @@ void setup_sm(int sm, uint offset) {
         pin_count = 2;
 #endif
         sm_config_set_out_pins(&config, BASE, pin_count);
-#if PICO_SCANVIDEO_ENABLE_DEN_PIN
+#if PICO_SCANVIDEO_ENABLE_CLOCK_PIN
         // side set pin as well
         sm_config_set_sideset_pins(&config, BASE + pin_count);
         pin_count++;
+#else
+        // side set count to zero if no clock
+        sm_config_set_sideset(&config, 0, false, false);
 #endif
         pio_sm_set_consecutive_pindirs(video_pio, sm, BASE, pin_count, true);
     }
@@ -1369,10 +1372,15 @@ bool scanvideo_setup_with_timing(const scanvideo_mode_t *mode, const scanvideo_t
 #if PICO_SCANVIDEO_ENABLE_DEN_PIN
     bi_decl_if_func_used(bi_1pin_with_name(PICO_SCANVIDEO_SYNC_PIN_BASE + 2, "Display Enable"));
     pin_mask |= 4u << PICO_SCANVIDEO_SYNC_PIN_BASE;
-#endif
 #if PICO_SCANVIDEO_ENABLE_CLOCK_PIN
     bi_decl_if_func_used(bi_1pin_with_name(PICO_SCANVIDEO_SYNC_PIN_BASE + 3, "Pixel Clock"));
     pin_mask |= 8u << PICO_SCANVIDEO_SYNC_PIN_BASE;
+#endif
+#else
+#if PICO_SCANVIDEO_ENABLE_CLOCK_PIN
+    bi_decl_if_func_used(bi_1pin_with_name(PICO_SCANVIDEO_SYNC_PIN_BASE + 2, "Pixel Clock"));
+    pin_mask |= 4u << PICO_SCANVIDEO_SYNC_PIN_BASE;
+#endif
 #endif
     static_assert(PICO_SCANVIDEO_PIXEL_RSHIFT + PICO_SCANVIDEO_PIXEL_RCOUNT <= PICO_SCANVIDEO_COLOR_PIN_COUNT, "red bits do not fit in color pins");
     static_assert(PICO_SCANVIDEO_PIXEL_GSHIFT + PICO_SCANVIDEO_PIXEL_GCOUNT <= PICO_SCANVIDEO_COLOR_PIN_COUNT, "green bits do not fit in color pins");
@@ -1454,15 +1462,20 @@ bool scanvideo_setup_with_timing(const scanvideo_mode_t *mode, const scanvideo_t
 #endif
 #endif
 
-    uint32_t side_set_xor = 0;
+    uint16_t side_set_mask = 0xE0FF; // Remove the side set / delay bits
+    uint16_t side_set_xor = 0;
+    if (timing->clock_polarity) side_set_xor = 0x1000; // flip the top side set bit
     modified_program = copy_program(&video_htiming_program, instructions, count_of(instructions));
 
-    if (timing->clock_polarity) {
-        side_set_xor = 0x1000; // flip the top side set bit
 
-        for (uint i = 0; i < video_htiming_program.length; i++) {
-            instructions[i] ^= side_set_xor;
-        }
+    for (uint i = 0; i < video_htiming_program.length; i++) {
+#if PICO_SCANVIDEO_ENABLE_CLOCK_PIN
+        // Set clock polarity
+        instructions[i] ^= side_set_xor;
+#else
+        // Remove clock side set
+        instructions[i] &= side_set_mask;
+#endif
     }
 
     video_htiming_load_offset = pio_add_program(video_pio, &modified_program);
@@ -1602,7 +1615,11 @@ bool scanvideo_setup_with_timing(const scanvideo_mode_t *mode, const scanvideo_t
 #define HTIMING_MIN 8
 
 #define TIMING_CYCLE 3u
+#if PICO_SCANVIDEO_ENABLE_CLOCK_PIN
 #define timing_encode(state, length, pins) ((video_htiming_states_program.instructions[state] ^ side_set_xor)| (((uint32_t)(length) - TIMING_CYCLE) << 16u) | ((uint32_t)(pins) << 29u))
+#else
+#define timing_encode(state, length, pins) ((video_htiming_states_program.instructions[state] & side_set_mask)| (((uint32_t)(length) - TIMING_CYCLE) << 16u) | ((uint32_t)(pins) << 29u))
+#endif
 #define A_CMD SET_IRQ_0
 #define A_CMD_VBLANK SET_IRQ_1
 #define B1_CMD CLEAR_IRQ_SCANLINE
