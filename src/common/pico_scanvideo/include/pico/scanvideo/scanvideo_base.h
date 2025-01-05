@@ -279,6 +279,10 @@ extern const scanvideo_mode_t vga_mode_160x120_60; // 3d monster maze anyone :-)
 extern const scanvideo_mode_t vga_mode_213x160_60;
 extern const scanvideo_mode_t vga_mode_320x240_60;
 extern const scanvideo_mode_t vga_mode_640x480_60;
+
+extern const scanvideo_mode_t vga_mode_320x200_70;
+extern const scanvideo_mode_t vga_mode_640x400_70;
+
 extern const scanvideo_mode_t vga_mode_800x600_54;
 extern const scanvideo_mode_t vga_mode_800x600_60;
 extern const scanvideo_mode_t vga_mode_1024x768_63;
