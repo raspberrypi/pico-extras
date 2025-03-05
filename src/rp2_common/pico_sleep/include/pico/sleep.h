@@ -9,7 +9,7 @@
 
 #include "pico.h"
 #include "hardware/rosc.h"
-
+#include "hardware/timer.h"
 #include "pico/aon_timer.h"
 
 #ifdef __cplusplus
