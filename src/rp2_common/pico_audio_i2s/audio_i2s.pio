@@ -20,7 +20,8 @@
 ; but for common syslck freqs this should still give a constant word select period.
 ;
 ; One output pin is used for the data output.
-; Two side-set pins are used. Bit 0 is clock, bit 1 is word select.
+; Two side-set pins are used. Two versions of the program are provided, so that
+; the clock and word select pins can be in either order.
 
 ; Send 16 bit words to the PIO for mono, 32 bit words for stereo
 
