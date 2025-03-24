@@ -61,7 +61,9 @@ const audio_format_t *audio_i2s_setup(const audio_format_t *intended_audio_forma
     pio_sm_claim(audio_pio, sm);
 
 
-    uint offset = pio_add_program(audio_pio, &audio_i2s_program);
+    const struct pio_program *program =
+        config->clock_pin_swapped ? &audio_i2s_swapped_program : &audio_i2s_program;
+    uint offset = pio_add_program(audio_pio, program);
 
     audio_i2s_program_init(audio_pio, sm, offset, config->data_pin, config->clock_pin_base);
 
