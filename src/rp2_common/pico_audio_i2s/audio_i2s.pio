@@ -77,7 +77,7 @@ static inline void audio_i2s_program_init(PIO pio, uint sm, uint offset, uint da
     uint64_t pin_mask = (1ull << data_pin) | (3ull << clock_pin_base);
     pio_sm_set_pindirs_with_mask64(pio, sm, pin_mask, pin_mask);
 #else
-    uint32_t pin_mask = (1ull << data_pin) | (3ull << clock_pin_base);
+    uint32_t pin_mask = (1u << data_pin) | (3u << clock_pin_base);
     pio_sm_set_pindirs_with_mask(pio, sm, pin_mask, pin_mask);
 #endif
     pio_sm_set_pins(pio, sm, 0); // clear pins
