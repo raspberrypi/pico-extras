@@ -52,7 +52,7 @@ const audio_format_t *audio_i2s_setup(const audio_format_t *intended_audio_forma
     gpio_set_function(config->clock_pin_base, func);
     gpio_set_function(config->clock_pin_base + 1, func);
 
-#if PICO_PIO_VERSION > 0
+#if PICO_PIO_USE_GPIO_BASE
     if(config->data_pin >= 32 || config->clock_pin_base + 1 >= 32) {
         pio_set_gpio_base(audio_pio, 16);
     }
