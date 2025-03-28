@@ -54,7 +54,7 @@ const audio_format_t *audio_i2s_setup(const audio_format_t *intended_audio_forma
 
 #if PICO_PIO_USE_GPIO_BASE
     if(config->data_pin >= 32 || config->clock_pin_base + 1 >= 32) {
-        assert(config->data_pin >= 16 && config->clock_pin_base + 1 >= 16);
+        assert(config->data_pin >= 16 && config->clock_pin_base >= 16);
         pio_set_gpio_base(audio_pio, 16);
     }
 #endif
