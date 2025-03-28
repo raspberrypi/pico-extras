@@ -106,6 +106,12 @@ extern "C" {
 #define PICO_AUDIO_I2S_CLOCK_PIN_BASE 26
 #endif
 
+// The default order is CLOCK_PIN_BASE=LRCLK, CLOCK_PIN_BASE+1=BCLK
+// The swapped order is CLOCK_PIN_BASE=BCLK,  CLOCK_PIN_BASE+1=LRCLK
+#ifndef PICO_AUDIO_I2S_CLOCK_PINS_SWAPPED
+#define PICO_AUDIO_I2S_CLOCK_PINS_SWAPPED 0
+#endif
+
 // todo this needs to come from a build config
 /** \brief Base configuration structure used when setting up
  * \ingroup pico_audio_i2s
