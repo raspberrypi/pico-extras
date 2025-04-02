@@ -68,8 +68,8 @@ const audio_pwm_channel_config_t default_left_channel_config =
         {
                 .core = {
                         .base_pin = PICO_AUDIO_PWM_L_PIN,
-                        .pio_sm = 0,
-                        .dma_channel = 0
+                        .pio_sm = PICO_AUDIO_PWM_L_PIO_SM,
+                        .dma_channel = PICO_AUDIO_PWM_L_DMA_CH
                 },
                 .pattern = 1,
         };
@@ -78,8 +78,8 @@ const audio_pwm_channel_config_t default_right_channel_config =
         {
                 .core = {
                         .base_pin = PICO_AUDIO_PWM_R_PIN,
-                        .pio_sm = 1,
-                        .dma_channel = 1
+                        .pio_sm = PICO_AUDIO_PWM_R_PIO_SM,
+                        .dma_channel = PICO_AUDIO_PWM_R_DMA_CH,
                 },
                 .pattern = 1,
         };
@@ -88,8 +88,8 @@ const audio_pwm_channel_config_t default_mono_channel_config =
         {
                 .core = {
                         .base_pin = PICO_AUDIO_PWM_MONO_PIN,
-                        .pio_sm = 0,
-                        .dma_channel = 0
+                        .pio_sm = PICO_AUDIO_PWM_MONO_PIO_SM,
+                        .dma_channel = PICO_AUDIO_PWM_MONO_DMA_CH
                 },
                 .pattern = 3,
         };
