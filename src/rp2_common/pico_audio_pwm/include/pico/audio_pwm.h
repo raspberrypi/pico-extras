@@ -97,7 +97,7 @@ extern "C" {
 #endif
 
 #ifndef PICO_AUDIO_PWM_R_PIO_SM
-#define PICO_AUDIO_PWM_R_PIO_SM 0
+#define PICO_AUDIO_PWM_R_PIO_SM 1
 #endif
 
 #ifndef PICO_AUDIO_PWM_R_DMA_CH
