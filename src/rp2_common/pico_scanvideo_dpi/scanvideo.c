@@ -886,7 +886,7 @@ static void __video_time_critical_func(prepare_for_vblank_scanline_irqs_enabled)
             // set up for scanline 0 of the next frame when we come out of vblank
             shared_state.scanline.next_scanline_id =
                     (scanvideo_frame_number(shared_state.scanline.next_scanline_id) + 1u) << 16u;
-            shared_state.scanline.y_repeat_target = _scanline_repeat_count_fn(shared_state.scanline.next_scanline_id);
+            shared_state.scanline.y_repeat_target = _scanline_repeat_count_fn(shared_state.scanline.next_scanline_id) * video_mode.yscale;
         }
 
 
