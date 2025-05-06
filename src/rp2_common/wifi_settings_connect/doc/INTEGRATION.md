@@ -3,13 +3,13 @@
 You can integrate wifi\_settings\_connect into your own Pico application
 with just a few lines of code:
 ```
-    #include "wifi_settings.h"                  // << add this
+    #include "wifi_settings/wifi_settings_connect.h"    // << add this
     int main() {
         stdio_init_all();
-        if (wifi_settings_init() != 0) {        // << and add this
+        if (wifi_settings_init() != 0) {                // << and add this
             panic(...);
         }
-        wifi_settings_connect();                // << and add this
+        wifi_settings_connect();                        // << and add this
         // and that's it...
     }
 ```

@@ -29,6 +29,7 @@ First, you need to configure the WiFi settings file
 in Flash. See the [wifi-settings file documentation](doc/SETTINGS_FILE.md).
 
 Next, you need to modify your application to use wifi\_settings\_connect.
+This involves adding a few lines of C code.
 There is an [integration guide which explains what you need to do
 to add wifi\_settings\_connect to your application](doc/INTEGRATION.md).
 
