@@ -20,8 +20,9 @@
 #include "pico/stdlib.h"
 #include "pico/time.h"
 #include "pico/cyw43_arch.h"
+#include "pico/platform.h"
 
-enum wifi_connect_state_t {
+enum __packed wifi_connect_state_t {
     UNINITIALISED = 0,          // cyw43 hardware was not started
     INITIALISATION_ERROR,       // initialisation failed (see hw_error_code)
     STORAGE_EMPTY_ERROR,        // no WiFi details are known
@@ -32,7 +33,7 @@ enum wifi_connect_state_t {
     CONNECTED_IP,               // connection is ready for use
 };
 
-enum ssid_scan_info_t {
+enum __packed ssid_scan_info_t {
     NOT_FOUND = 0,              // this SSID was not found
     FOUND,                      // this SSID was found by the most recent scan
     ATTEMPT,                    // we attempted to connect to this SSID
@@ -48,7 +49,7 @@ enum ssid_scan_info_t {
 
 struct wifi_state_t {
     enum wifi_connect_state_t   cstate;
-    enum ssid_scan_info_t       ssid_scan_info[NUM_SSIDS + 1];
+    enum ssid_scan_info_t       ssid_scan_info[MAX_NUM_SSIDS + 1];
     struct netif*               netif;
     cyw43_t*                    cyw43;
     uint                        selected_ssid_index;

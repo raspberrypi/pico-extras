@@ -10,8 +10,6 @@
 #ifndef _WIFI_SETTINGS_FLASH_RANGE_H_
 #define _WIFI_SETTINGS_FLASH_RANGE_H_
 
-#include "hardware/flash.h"
-
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -57,6 +55,11 @@ void wifi_settings_range_get_reusable(
 
 /// @brief Determine the range of addresses used by the wifi-settings file
 /// @param[out] r Flash memory range
+/// @details This function has a weak symbol, allowing it to be reimplemented
+/// by applications in order to place the file at any Flash location,
+/// including a location that is determined dynamically. A different
+/// static location can also be set at build time with
+/// -DWIFI_SETTINGS_FILE_ADDRESS=0x...
 void wifi_settings_range_get_wifi_settings_file(
     wifi_settings_flash_range_t* r);
 

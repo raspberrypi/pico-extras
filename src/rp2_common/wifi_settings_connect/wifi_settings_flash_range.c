@@ -10,6 +10,7 @@
 #include "wifi_settings/wifi_settings_configuration.h"
 #include "wifi_settings/wifi_settings_flash_range.h"
 
+#include "pico/platform.h"
 #include "hardware/regs/addressmap.h"
 #ifdef XIP_QMI_BASE
 #include "hardware/structs/qmi.h"
@@ -110,10 +111,12 @@ void wifi_settings_range_get_partition(wifi_settings_flash_range_t* r) {
 }
 
 // Determine the range of addresses used by the wifi-settings file
-void wifi_settings_range_get_wifi_settings_file(wifi_settings_flash_range_t* r) {
-    r->start_address = FLASH_ADDRESS_OF_WIFI_SETTINGS_FILE;
+// This function can be reimplemented in order to set the file location dynamically;
+// this default version uses values from wifi_settings_configuration.h which are
+// guaranteed to be valid because of static assertions in the header
+__weak void wifi_settings_range_get_wifi_settings_file(wifi_settings_flash_range_t* r) {
+    r->start_address = WIFI_SETTINGS_FILE_ADDRESS;
     r->size = WIFI_SETTINGS_FILE_SIZE;
-    wifi_settings_range_align_to_sector(r);
 }
 
 // Determine the range of addresses that are reusable

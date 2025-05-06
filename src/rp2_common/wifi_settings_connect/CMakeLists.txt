@@ -19,6 +19,13 @@ elseif (NOT TARGET pico_lwip_core)
 else()
     message("wifi_settings_connect: library is available.")
     add_library(wifi_settings_connect INTERFACE)
+    set(WIFI_SETTINGS_VERSION_STRING "0.2.0c")
+    set(WIFI_SETTINGS_PROJECT_URL "https://github.com/jwhitham/pico-wifi-settings")
+
+    target_compile_definitions(wifi_settings_connect INTERFACE
+        WIFI_SETTINGS_VERSION_STRING="${WIFI_SETTINGS_VERSION_STRING}"
+        WIFI_SETTINGS_PROJECT_URL="${WIFI_SETTINGS_PROJECT_URL}"
+    )
 
     target_include_directories(wifi_settings_connect INTERFACE
             ${CMAKE_CURRENT_LIST_DIR}/include

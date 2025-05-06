@@ -20,6 +20,7 @@
 #include "wifi_settings/wifi_settings_remote.h"
 #endif
 
+#include "pico/binary_info.h"
 #include "pico/error.h"
 
 #include <string.h>
@@ -127,7 +128,7 @@ int wifi_settings_get_ip_status_text(char* text, int text_size) {
 }
 
 const char* wifi_settings_get_ssid_status(int ssid_index) {
-    if ((ssid_index >= 1) && (ssid_index <= NUM_SSIDS)) {
+    if ((ssid_index >= 1) && (ssid_index <= MAX_NUM_SSIDS)) {
         switch (g_wifi_state.ssid_scan_info[ssid_index]) {
             case NOT_FOUND: return "NOT FOUND"; break;
             case FOUND:     return "FOUND"; break;
@@ -213,7 +214,7 @@ static enum ssid_type_t fetch_ssid(uint ssid_index, char* ssid, uint8_t* bssid) 
 
 static int wifi_scan_callback(void* unused, const cyw43_ev_scan_result_t* scan_result) {
     // Is this SSID known? Iterate through the file to see if there is a record of it.
-    for (uint ssid_index = 1; ssid_index <= NUM_SSIDS; ssid_index++) {
+    for (uint ssid_index = 1; ssid_index <= MAX_NUM_SSIDS; ssid_index++) {
         // Skip SSIDs that we already saw
         if (g_wifi_state.ssid_scan_info[ssid_index] != NOT_FOUND) {
             continue;
@@ -258,7 +259,7 @@ static void begin_connecting() {
 
     // Which hotspot to connect to?
     g_wifi_state.selected_ssid_index = 0;
-    for (uint ssid_index = 1; ssid_index <= NUM_SSIDS; ssid_index++) {
+    for (uint ssid_index = 1; ssid_index <= MAX_NUM_SSIDS; ssid_index++) {
         if (g_wifi_state.ssid_scan_info[ssid_index] == FOUND) {
             g_wifi_state.selected_ssid_index = ssid_index;
             break;
@@ -346,7 +347,7 @@ static bool has_valid_address() {
 
 static void begin_new_scan() {
     // Begin a scan. We will reset everything we know about hotspots first.
-    for (uint ssid_index = 1; ssid_index <= NUM_SSIDS; ssid_index++) {
+    for (uint ssid_index = 1; ssid_index <= MAX_NUM_SSIDS; ssid_index++) {
         g_wifi_state.ssid_scan_info[ssid_index] = NOT_FOUND;
     }
     // Start the scan
@@ -449,6 +450,8 @@ int wifi_settings_init() {
     if (g_wifi_state.cstate != UNINITIALISED) {
         return PICO_ERROR_INVALID_STATE;
     }
+    // Put wifi-settings library version into the binary info
+    bi_decl_if_func_used(bi_program_feature("pico-wifi-settings v" WIFI_SETTINGS_VERSION_STRING));
 
     // Start with globals in known state
     memset(&g_wifi_state, 0, sizeof(g_wifi_state));
