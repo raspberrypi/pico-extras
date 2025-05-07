@@ -6,7 +6,7 @@ is called the "WiFi settings file". It is similar to a file on a disk,
 except that it is always at the same location, and the size is
 limited to 4096 bytes.
 
-The file can be updated over USB by using [picotool](https://github.com/raspberrypi/picotool).
+The file can be updated over USB by using [picotool](https://github.com/raspberrypi/pico-sdk-tools/releases).
 It is a text file which can be edited with any text editor.
 Here is an example of typical contents:
 ```
@@ -46,11 +46,9 @@ You can also use the following:
 
 # Copying the WiFi settings file by USB
 
-You can use [picotool](https://github.com/raspberrypi/picotool) to copy the
-file from your PC to your Pico via USB.
-
-picotool is part of the Pico SDK. 
-You need to build picotool with USB support for your OS (or download a pre-built copy).
+You can use
+[picotool](https://github.com/raspberrypi/pico-sdk-tools/releases).
+to copy the file from your computer to your Pico via USB.
 
 To use picotool,
 boot the Pico in bootloader mode by holding down the BOOTSEL button while plugging it
@@ -60,7 +58,7 @@ The default address is 16kb before the final address in Flash:
  - On Pico W, use `0x101fc000` as the address.
  - On Pico 2 W, use `0x103fc000` as the address.
 
-You must also rename your WiFi settings file so that it ends with `.bin` as 
+You must also rename your WiFi settings file so that it ends with `.bin` as
 picotool is not able to upload files unless they are `.bin`, `.elf` or `.uf2`.
 
 Here is a sample upload command for Pico W (RP2040):
@@ -96,9 +94,13 @@ and Pico 2 W (RP2350):
 ```
     picotool save -r 0x103fc000 0x103fd000 backup.bin
 ```
-Characters after the end of the file will be copied (usually either 0x00 or 0xff).
-These can be safely deleted using your text editor. The backup is restored by
-using `picotool load` as described in "Copying the WiFi settings file by USB".
+Bytes after the end of the file will also be copied (usually either 0x00 or 0xff).
+These can be safely deleted. Some text editors will allow you to delete them,
+but if you have any difficulty, you can also remove them with a shell command such as:
+```
+    LC_ALL=C sed -i 's/[\x00\xFF]//g' backup.bin
+```
+The backup is restored using `picotool load` as described in "Copying the WiFi settings file by USB".
 
 These examples use the default location for the wifi-settings file. If you
 are using a custom location, e.g. building with

@@ -127,6 +127,37 @@ int wifi_settings_get_ip_status_text(char* text, int text_size) {
         ip4addr_ntoa_r(netif_ip4_gw(g_wifi_state.netif), addr_buf3, IPV4_ADDRESS_SIZE));
 }
 
+int wifi_settings_get_ip(char* text, int text_size) {
+    if ((!g_wifi_state.netif)
+    || (!netif_is_link_up(g_wifi_state.netif))) {
+        // Not connected - return empty string
+        text[0] = '\0';
+        return 0;
+    }
+    char addr_buf[IPV4_ADDRESS_SIZE];
+    return snprintf(text, text_size,
+        "%s",
+        ip4addr_ntoa_r(netif_ip4_addr(g_wifi_state.netif), addr_buf, IPV4_ADDRESS_SIZE));
+}
+
+int wifi_settings_get_ssid(char* text, int text_size) {
+    char ssid[WIFI_SSID_SIZE];
+    uint8_t bssid[WIFI_BSSID_SIZE];
+
+    switch(g_wifi_state.cstate) {
+        case CONNECTING:
+        case CONNECTED_IP:
+            (void) fetch_ssid(g_wifi_state.selected_ssid_index, ssid, bssid);
+            // The text buffer will contain '?' if the SSID is unknown (e.g. if
+            // the wifi-settings file was updated to remove the SSID while connected).
+            return snprintf(text, text_size, "%s", ssid);
+        default:
+            // Not connected - return empty string
+            text[0] = '\0';
+            return 0;
+    }
+}
+
 const char* wifi_settings_get_ssid_status(int ssid_index) {
     if ((ssid_index >= 1) && (ssid_index <= MAX_NUM_SSIDS)) {
         switch (g_wifi_state.ssid_scan_info[ssid_index]) {

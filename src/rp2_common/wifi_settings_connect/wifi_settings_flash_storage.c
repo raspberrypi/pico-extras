@@ -11,10 +11,14 @@
 #include "wifi_settings/wifi_settings_flash_storage.h"
 #include "wifi_settings/wifi_settings_flash_range.h"
 
+#include "pico/platform.h"
+
 #include <string.h>
 
 
-bool wifi_settings_get_value_for_key(
+// Scan the settings file in Flash for a particular key.
+// This function can be reimplemented in order to load settings from some other storage
+__weak bool wifi_settings_get_value_for_key(
             const char* key, char* value, uint* value_size) {
 
     wifi_settings_flash_range_t fr;

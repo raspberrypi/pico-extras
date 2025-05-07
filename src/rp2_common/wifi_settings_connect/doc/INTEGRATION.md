@@ -105,8 +105,15 @@ size of the buffer.
  - `wifi_settings_get_ip_status_text()` produces a line of
    text describing the status of the `lwip` network stack e.g. IP address; this will be empty
    if unconnected.
+ - `wifi_settings_get_ip` produces the IP address by itself; this will be empty
+   if unconnected.
+ - `wifi_settings_get_ssid` produces the current SSID by itself; this will be empty
+   if unconnected. If connected using a BSSID, this will be reported as
+   a `:`-separated lower-case MAC address, e.g. `01:23:45:67:89:ab`. If the wifi-settings
+   file has been updated since the connection was made, then the result may be `?`,
+   as the SSID is found by searching the wifi-settings file.
 
-There is also a function to report the current connection state
+There is also a function to report the current connection state.
 `wifi_settings_get_ssid_status()` returns
 a pointer to a static string, indicating the status of a connection attempt to
 an SSID, e.g. `SUCCESS`, `NOT FOUND`.
@@ -115,6 +122,6 @@ Your application can call `wifi_settings_disconnect()` to force disconnect,
 or `wifi_settings_deinit()` to deinitialise the driver, but this is never necessary
 and these steps can be left out. They exist to allow the application to shut down WiFi,
 e.g. to save power, or in order to control the WiFi hardware directly for some other
-purpose. For example, the 
+purpose. For example, the
 [setup app](https://github.com/jwhitham/pico-wifi-settings/tree/master/doc/SETUP_APP.md)
 uses this feature to perform its own WiFi scan.

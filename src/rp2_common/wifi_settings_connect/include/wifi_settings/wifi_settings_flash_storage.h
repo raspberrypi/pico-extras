@@ -22,6 +22,8 @@
 /// @param[out] value Value for key (if found) - not '\0' terminated
 /// @param[inout] value_size Size of the value
 /// @return true if key found
+/// @details This function has a weak symbol, allowing it to be reimplemented
+/// by applications in order to load settings from some other storage
 bool wifi_settings_get_value_for_key(
             const char* key,
             char* value, uint* value_size);

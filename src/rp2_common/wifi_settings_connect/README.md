@@ -3,12 +3,13 @@
 This is a library to manage WiFi connections. It provides Flash storage
 for WiFi passwords and hotspot names, and a background async\_context
 service to automatically connect to them. You can store details for
-up to 100 hotspots and update them using `picotool` or a setup
-application. This avoids any need to
-specify build-time flags such as `WIFI_SSID` and `WIFI_PASSWORD`.
+up to 100 hotspots and update them using
+[picotool](https://github.com/raspberrypi/pico-sdk-tools/releases).
+or a [setup application](https://github.com/jwhitham/pico-wifi-settings/releases/).
+This avoids any need to specify build-time flags such as `WIFI_SSID` and `WIFI_PASSWORD`.
 
 WiFi hotspot details are stored in a Flash sector that isn't normally used by programs,
-normally located near the end of Flash memory. This 
+normally located near the end of Flash memory. This
 [wifi-settings file](doc/SETTINGS_FILE.md) is a simple text file which
 can be updated by USB or by installing a setup app from the
 [pico-wifi-settings home page](https://github.com/jwhitham/pico-wifi-settings)

@@ -62,6 +62,18 @@ int wifi_settings_get_hw_status_text(char* text, int text_size);
 /// @return Return code from snprintf when formatting
 int wifi_settings_get_ip_status_text(char* text, int text_size);
 
+/// @brief Get the IP address by itself
+/// @param[inout] text Text buffer for address
+/// @param[in] text_size Available space in the buffer (bytes)
+/// @return Return code from snprintf when formatting
+int wifi_settings_get_ip(char* text, int text_size);
+
+/// @brief Get the current SSID by itself
+/// @param[inout] text Text buffer for SSID
+/// @param[in] text_size Available space in the buffer (bytes)
+/// @return Return code from snprintf when formatting
+int wifi_settings_get_ssid(char* text, int text_size);
+
 /// @brief Get the status of a connection attempt to
 /// an SSID as a static string, e.g. SUCCESS, NOT_FOUND. "" is returned
 /// if the SSID index is not known.

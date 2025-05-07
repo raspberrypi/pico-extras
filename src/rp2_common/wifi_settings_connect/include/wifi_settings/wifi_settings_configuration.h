@@ -48,7 +48,7 @@
 // is the recommended value, but any positive multiple of the Flash sector size
 // can be used.
 #ifndef WIFI_SETTINGS_FILE_SIZE
-#define WIFI_SETTINGS_FILE_SIZE         (FLASH_SECTOR_SIZE)   // (0x1000 bytes)
+#define WIFI_SETTINGS_FILE_SIZE         (1 * FLASH_SECTOR_SIZE)   // (0x1000 bytes)
 #endif
 
 // Minimum time between initialisation and the first scan (milliseconds).
