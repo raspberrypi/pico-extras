@@ -24,12 +24,20 @@ extern "C" {
 
 // PICO_CONFIG: SPINLOCK_ID_AUDIO_FREE_LIST_LOCK, Spinlock number for the audio free list, min=0, max=31, default=6, group=audio
 #ifndef SPINLOCK_ID_AUDIO_FREE_LIST_LOCK
+#if PICO_RP2350 && !PICO_USE_SW_SPIN_LOCKS
+#error "When not using software spin locks on RP2350, you must define SPINLOCK_ID_AUDIO_FREE_LIST_LOCK, accounting for Errata E2 and the SDK spin lock IDs"
+#else
 #define SPINLOCK_ID_AUDIO_FREE_LIST_LOCK 6
+#endif
 #endif
 
 // PICO_CONFIG: SPINLOCK_ID_AUDIO_PREPARED_LISTS_LOCK, Spinlock number for the audio prepared list, min=0, max=31, default=7, group=audio
 #ifndef SPINLOCK_ID_AUDIO_PREPARED_LISTS_LOCK
+#if PICO_RP2350 && !PICO_USE_SW_SPIN_LOCKS
+#error "When not using software spin locks on RP2350, you must define SPINLOCK_ID_AUDIO_PREPARED_LISTS_LOCK, accounting for Errata E2 and the SDK spin lock IDs"
+#else
 #define SPINLOCK_ID_AUDIO_PREPARED_LISTS_LOCK 7
+#endif
 #endif
 
 // PICO_CONFIG: PICO_AUDIO_NOOP, Enable/disable audio by forcing NOOPS, type=bool, default=0, group=audio
