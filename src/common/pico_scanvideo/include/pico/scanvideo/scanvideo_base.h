@@ -320,7 +320,7 @@ extern void scanvideo_default_configure_pio(pio_hw_t *pio, uint sm, uint offset,
 
 #ifndef PICO_SPINLOCK_ID_VIDEO_SCANLINE_LOCK
 #if PICO_RP2350 && !PICO_USE_SW_SPIN_LOCKS
-#error "When not using software spin locks on RP2350, you must explicitly define the pico-extras spinlock IDs, accounting for Errata E2 and the SDK spin lock IDs"
+#error "When not using software spin locks on RP2350, you must explicitly define PICO_SPINLOCK_ID_VIDEO_SCANLINE_LOCK, taking Errata RP2350-E2 and the SDK spin lock IDs into account"
 #else
 #define PICO_SPINLOCK_ID_VIDEO_SCANLINE_LOCK 2
 #endif
@@ -328,7 +328,7 @@ extern void scanvideo_default_configure_pio(pio_hw_t *pio, uint sm, uint offset,
 
 #ifndef PICO_SPINLOCK_ID_VIDEO_FREE_LIST_LOCK
 #if PICO_RP2350 && !PICO_USE_SW_SPIN_LOCKS
-#error "When not using software spin locks on RP2350, you must explicitly define the pico-extras spinlock IDs, accounting for Errata E2 and the SDK spin lock IDs"
+#error "When not using software spin locks on RP2350, you must explicitly define PICO_SPINLOCK_ID_VIDEO_FREE_LIST_LOCK, taking Errata RP2350-E2 and the SDK spin lock IDs into account"
 #else
 #define PICO_SPINLOCK_ID_VIDEO_FREE_LIST_LOCK 3
 #endif
@@ -336,7 +336,7 @@ extern void scanvideo_default_configure_pio(pio_hw_t *pio, uint sm, uint offset,
 
 #ifndef PICO_SPINLOCK_ID_VIDEO_DMA_LOCK
 #if PICO_RP2350 && !PICO_USE_SW_SPIN_LOCKS
-#error "When not using software spin locks on RP2350, you must explicitly define the pico-extras spinlock IDs, accounting for Errata E2 and the SDK spin lock IDs"
+#error "When not using software spin locks on RP2350, you must explicitly define PICO_SPINLOCK_ID_VIDEO_DMA_LOCK, taking Errata RP2350-E2 and the SDK spin lock IDs into account"
 #else
 #define PICO_SPINLOCK_ID_VIDEO_DMA_LOCK 4
 #endif
@@ -344,7 +344,7 @@ extern void scanvideo_default_configure_pio(pio_hw_t *pio, uint sm, uint offset,
 
 #ifndef PICO_SPINLOCK_ID_VIDEO_IN_USE_LOCK
 #if PICO_RP2350 && !PICO_USE_SW_SPIN_LOCKS
-#error "When not using software spin locks on RP2350, you must explicitly define the pico-extras spinlock IDs, accounting for Errata E2 and the SDK spin lock IDs"
+#error "When not using software spin locks on RP2350, you must explicitly define PICO_SPINLOCK_ID_VIDEO_IN_USE_LOCK, taking Errata RP2350-E2 and the SDK spin lock IDs into account"
 #else
 #define PICO_SPINLOCK_ID_VIDEO_IN_USE_LOCK 5
 #endif
