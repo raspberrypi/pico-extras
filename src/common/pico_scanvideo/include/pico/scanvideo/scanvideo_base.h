@@ -319,19 +319,35 @@ extern void scanvideo_default_configure_pio(pio_hw_t *pio, uint sm, uint offset,
 #endif
 
 #ifndef PICO_SPINLOCK_ID_VIDEO_SCANLINE_LOCK
+#if PICO_RP2350 && !PICO_USE_SW_SPIN_LOCKS
+#error "When not using software spin locks on RP2350, you must explicitly define PICO_SPINLOCK_ID_VIDEO_SCANLINE_LOCK, taking Errata RP2350-E2 and the SDK spin lock IDs into account"
+#else
 #define PICO_SPINLOCK_ID_VIDEO_SCANLINE_LOCK 2
+#endif
 #endif
 
 #ifndef PICO_SPINLOCK_ID_VIDEO_FREE_LIST_LOCK
+#if PICO_RP2350 && !PICO_USE_SW_SPIN_LOCKS
+#error "When not using software spin locks on RP2350, you must explicitly define PICO_SPINLOCK_ID_VIDEO_FREE_LIST_LOCK, taking Errata RP2350-E2 and the SDK spin lock IDs into account"
+#else
 #define PICO_SPINLOCK_ID_VIDEO_FREE_LIST_LOCK 3
+#endif
 #endif
 
 #ifndef PICO_SPINLOCK_ID_VIDEO_DMA_LOCK
+#if PICO_RP2350 && !PICO_USE_SW_SPIN_LOCKS
+#error "When not using software spin locks on RP2350, you must explicitly define PICO_SPINLOCK_ID_VIDEO_DMA_LOCK, taking Errata RP2350-E2 and the SDK spin lock IDs into account"
+#else
 #define PICO_SPINLOCK_ID_VIDEO_DMA_LOCK 4
+#endif
 #endif
 
 #ifndef PICO_SPINLOCK_ID_VIDEO_IN_USE_LOCK
+#if PICO_RP2350 && !PICO_USE_SW_SPIN_LOCKS
+#error "When not using software spin locks on RP2350, you must explicitly define PICO_SPINLOCK_ID_VIDEO_IN_USE_LOCK, taking Errata RP2350-E2 and the SDK spin lock IDs into account"
+#else
 #define PICO_SPINLOCK_ID_VIDEO_IN_USE_LOCK 5
+#endif
 #endif
 
 // note this is not necessarily an absolute gpio pin mask, it is still shifted by PICO_SCANVIDEO_COLOR_PIN_BASE
