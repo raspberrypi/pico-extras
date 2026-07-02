@@ -359,7 +359,7 @@ extern void scanvideo_default_configure_pio(pio_hw_t *pio, uint sm, uint offset,
 #endif
 
 #ifndef PICO_SCANVIDEO_PIXEL_FROM_RGB5
-#define PICO_SCANVIDEO_PIXEL_FROM_RGB5(r, g, b) PICO_SCANVIDEO_PIXEL_FROM_RGB8(r<<3, b<<3, g<<3)
+#define PICO_SCANVIDEO_PIXEL_FROM_RGB5(r, g, b) PICO_SCANVIDEO_PIXEL_FROM_RGB8((r)<<3, (g)<<3, (b)<<3)
 #endif
 
 #ifndef PICO_SCANVIDEO_R8_FROM_PIXEL
