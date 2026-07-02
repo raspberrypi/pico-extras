@@ -1,5 +1,5 @@
 # This CMakeLists.txt intended to be included from other projectgs
-pico_add_subdirectory(hardware_rosc)
+pico_add_subdirectory(hardware_rosc_extra)
 pico_add_subdirectory(pico_sleep)
 pico_add_subdirectory(pico_audio_i2s)
 pico_add_subdirectory(pico_audio_pwm)

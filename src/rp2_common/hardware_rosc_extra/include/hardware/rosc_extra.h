@@ -4,20 +4,21 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#ifndef _HARDWARE_ROSC_H_
-#define _HARDWARE_ROSC_H_
+#ifndef _HARDWARE_ROSC_EXTRA_H_
+#define _HARDWARE_ROSC_EXTRA_H_
 
 #include "pico.h"
+#include "hardware/rosc.h"
 #include "hardware/structs/rosc.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/** \file rosc.h
+/** \file rosc_extra.h
  *  \defgroup hardware_rosc hardware_rosc
  *
- * Ring Oscillator (ROSC) API
+ * Ring Oscillator (ROSC) API Extras
  *
  * A Ring Oscillator is an on-chip oscillator that requires no external crystal. Instead, the output is generated from a series of
  * inverters that are chained together to create a feedback loop. RP2040 boots from the ring oscillator initially, meaning the
@@ -43,23 +44,6 @@ void rosc_set_freq(uint32_t code);
  */
 void rosc_set_range(uint range);
 
-/*! \brief  Disable the Ring Oscillator
- *  \ingroup hardware_rosc
- *
- */
-void rosc_disable(void);
-
-/*! \brief  Put Ring Oscillator in to dormant mode.
- *  \ingroup hardware_rosc
- *
- * The ROSC supports a dormant mode,which stops oscillation until woken up up by an asynchronous interrupt.
- * This can either come from the RTC, being clocked by an external clock, or a GPIO pin going high or low.
- * If no IRQ is configured before going into dormant mode the ROSC will never restart.
- *
- * PLLs should be stopped before selecting dormant mode.
- */
-void rosc_set_dormant(void);
-
 // FIXME: Add doxygen
 
 uint32_t next_rosc_code(uint32_t code);
@@ -67,23 +51,6 @@ uint32_t next_rosc_code(uint32_t code);
 uint rosc_find_freq(uint32_t low_mhz, uint32_t high_mhz);
 
 void rosc_set_div(uint32_t div);
-
-inline static void rosc_clear_bad_write(void) {
-    hw_clear_bits(&rosc_hw->status, ROSC_STATUS_BADWRITE_BITS);
-}
-
-inline static bool rosc_write_okay(void) {
-    return !(rosc_hw->status & ROSC_STATUS_BADWRITE_BITS);
-}
-
-inline static void rosc_write(io_rw_32 *addr, uint32_t value) {
-    rosc_clear_bad_write();
-    assert(rosc_write_okay());
-    *addr = value;
-    assert(rosc_write_okay());
-};
-
-void rosc_enable(void);
 
 #ifdef __cplusplus
 }
