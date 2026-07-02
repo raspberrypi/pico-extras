@@ -8,7 +8,7 @@ See [pico-playground](https://github.com/raspberrypi/pico-playground) for builda
 
 Library|Description 
 ---|---
-[hardware_rosc](src/rp2_common/hardware_rosc)| API for the ring oscillator
+[hardware_rosc_extra](src/rp2_common/hardware_rosc_extra)| Extra API functions for the ring oscillator
 `lwip`| Deprecated as of SDK 1.5.0; use `pico_lwip` and `pico_lwip_arch` from the SDK instead. 
 [pico_audio](src/common/pico_audio)|Audio output support; this is highly functional, but the API is subject to change 
 &nbsp;&nbsp;&nbsp;[pico_audio_i2s](src/rp2_common/pico_audio_i2s)|Audio output via I2S on 3 GPIOs using PIO. Arbitrary frequency

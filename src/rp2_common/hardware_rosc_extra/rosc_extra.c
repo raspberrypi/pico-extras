@@ -8,7 +8,7 @@
 
 // For MHZ definitions etc
 #include "hardware/clocks.h"
-#include "hardware/rosc.h"
+#include "hardware/rosc_extra.h"
 
 // Given a ROSC delay stage code, return the next-numerically-higher code.
 // Top result bit is set when called on maximum ROSC code.
@@ -42,28 +42,4 @@ void rosc_set_freq(uint32_t code) {
 void rosc_set_range(uint range) {
     // Range should use enumvals from the headers and thus have the password correct
     rosc_write(&rosc_hw->ctrl, (ROSC_CTRL_ENABLE_VALUE_ENABLE << ROSC_CTRL_ENABLE_LSB) | range);
-}
-
-void rosc_disable(void) {
-    uint32_t tmp = rosc_hw->ctrl;
-    tmp &= (~ROSC_CTRL_ENABLE_BITS);
-    tmp |= (ROSC_CTRL_ENABLE_VALUE_DISABLE << ROSC_CTRL_ENABLE_LSB);
-    rosc_write(&rosc_hw->ctrl, tmp);
-    // Wait for stable to go away
-    while(rosc_hw->status & ROSC_STATUS_STABLE_BITS);
-}
-
-void rosc_set_dormant(void) {
-    // WARNING: This stops the rosc until woken up by an irq
-    rosc_write(&rosc_hw->dormant, ROSC_DORMANT_VALUE_DORMANT);
-    // Wait for it to become stable once woken up
-    while(!(rosc_hw->status & ROSC_STATUS_STABLE_BITS));
-}
-
-void rosc_enable(void) {
-    //Re-enable the rosc
-    rosc_write(&rosc_hw->ctrl, ROSC_CTRL_ENABLE_BITS);
-
-    //Wait for it to become stable once restarted
-    while (!(rosc_hw->status & ROSC_STATUS_STABLE_BITS));
 }
