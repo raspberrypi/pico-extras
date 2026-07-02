@@ -12,6 +12,7 @@
 #if !PICO_NO_HARDWARE
 
 #include "hardware/pio.h"
+#include "hardware/sync.h"
 
 #endif
 
@@ -319,42 +320,70 @@ extern void scanvideo_default_configure_pio(pio_hw_t *pio, uint sm, uint offset,
 #endif
 
 #ifndef PICO_SPINLOCK_ID_VIDEO_SCANLINE_LOCK
+#if PICO_RP2350 && !PICO_USE_SW_SPIN_LOCKS
+#error "When not using software spin locks on RP2350, you must explicitly define PICO_SPINLOCK_ID_VIDEO_SCANLINE_LOCK, taking Errata RP2350-E2 and the SDK spin lock IDs into account"
+#else
 #define PICO_SPINLOCK_ID_VIDEO_SCANLINE_LOCK 2
+#endif
 #endif
 
 #ifndef PICO_SPINLOCK_ID_VIDEO_FREE_LIST_LOCK
+#if PICO_RP2350 && !PICO_USE_SW_SPIN_LOCKS
+#error "When not using software spin locks on RP2350, you must explicitly define PICO_SPINLOCK_ID_VIDEO_FREE_LIST_LOCK, taking Errata RP2350-E2 and the SDK spin lock IDs into account"
+#else
 #define PICO_SPINLOCK_ID_VIDEO_FREE_LIST_LOCK 3
+#endif
 #endif
 
 #ifndef PICO_SPINLOCK_ID_VIDEO_DMA_LOCK
+#if PICO_RP2350 && !PICO_USE_SW_SPIN_LOCKS
+#error "When not using software spin locks on RP2350, you must explicitly define PICO_SPINLOCK_ID_VIDEO_DMA_LOCK, taking Errata RP2350-E2 and the SDK spin lock IDs into account"
+#else
 #define PICO_SPINLOCK_ID_VIDEO_DMA_LOCK 4
+#endif
 #endif
 
 #ifndef PICO_SPINLOCK_ID_VIDEO_IN_USE_LOCK
+#if PICO_RP2350 && !PICO_USE_SW_SPIN_LOCKS
+#error "When not using software spin locks on RP2350, you must explicitly define PICO_SPINLOCK_ID_VIDEO_IN_USE_LOCK, taking Errata RP2350-E2 and the SDK spin lock IDs into account"
+#else
 #define PICO_SPINLOCK_ID_VIDEO_IN_USE_LOCK 5
+#endif
 #endif
 
 // note this is not necessarily an absolute gpio pin mask, it is still shifted by PICO_SCANVIDEO_COLOR_PIN_BASE
 #define PICO_SCANVIDEO_ALPHA_MASK (1u << PICO_SCANVIDEO_ALPHA_PIN)
 
 #ifndef PICO_SCANVIDEO_PIXEL_FROM_RGB8
-#define PICO_SCANVIDEO_PIXEL_FROM_RGB8(r, g, b) ((((b)>>3u)<<PICO_SCANVIDEO_PIXEL_BSHIFT)|(((g)>>3u)<<PICO_SCANVIDEO_PIXEL_GSHIFT)|(((r)>>3u)<<PICO_SCANVIDEO_PIXEL_RSHIFT))
+#define PICO_SCANVIDEO_PIXEL_FROM_RGB8(r, g, b) ((((b)>>(8-PICO_SCANVIDEO_PIXEL_BCOUNT))<<PICO_SCANVIDEO_PIXEL_BSHIFT)|(((g)>>(8-PICO_SCANVIDEO_PIXEL_GCOUNT))<<PICO_SCANVIDEO_PIXEL_GSHIFT)|(((r)>>(8-PICO_SCANVIDEO_PIXEL_RCOUNT))<<PICO_SCANVIDEO_PIXEL_RSHIFT))
 #endif
 
 #ifndef PICO_SCANVIDEO_PIXEL_FROM_RGB5
-#define PICO_SCANVIDEO_PIXEL_FROM_RGB5(r, g, b) (((b)<<PICO_SCANVIDEO_PIXEL_BSHIFT)|((g)<<PICO_SCANVIDEO_PIXEL_GSHIFT)|((r)<<PICO_SCANVIDEO_PIXEL_RSHIFT))
+#define PICO_SCANVIDEO_PIXEL_FROM_RGB5(r, g, b) PICO_SCANVIDEO_PIXEL_FROM_RGB8(r<<3, b<<3, g<<3)
+#endif
+
+#ifndef PICO_SCANVIDEO_R8_FROM_PIXEL
+#define PICO_SCANVIDEO_R8_FROM_PIXEL(p) (((p)>>PICO_SCANVIDEO_PIXEL_RSHIFT)<<(8-PICO_SCANVIDEO_PIXEL_RCOUNT)&0xff)
+#endif
+
+#ifndef PICO_SCANVIDEO_G8_FROM_PIXEL
+#define PICO_SCANVIDEO_G8_FROM_PIXEL(p) (((p)>>PICO_SCANVIDEO_PIXEL_GSHIFT)<<(8-PICO_SCANVIDEO_PIXEL_GCOUNT)&0xff)
+#endif
+
+#ifndef PICO_SCANVIDEO_B8_FROM_PIXEL
+#define PICO_SCANVIDEO_B8_FROM_PIXEL(p) (((p)>>PICO_SCANVIDEO_PIXEL_BSHIFT)<<(8-PICO_SCANVIDEO_PIXEL_BCOUNT)&0xff)
 #endif
 
 #ifndef PICO_SCANVIDEO_R5_FROM_PIXEL
-#define PICO_SCANVIDEO_R5_FROM_PIXEL(p) (((p)>>PICO_SCANVIDEO_PIXEL_RSHIFT)&0x1f)
+#define PICO_SCANVIDEO_R5_FROM_PIXEL(p) (PICO_SCANVIDEO_R8_FROM_PIXEL(p)>>3)
 #endif
 
 #ifndef PICO_SCANVIDEO_G5_FROM_PIXEL
-#define PICO_SCANVIDEO_G5_FROM_PIXEL(p) (((p)>>PICO_SCANVIDEO_PIXEL_GSHIFT)&0x1f)
+#define PICO_SCANVIDEO_G5_FROM_PIXEL(p) (PICO_SCANVIDEO_G8_FROM_PIXEL(p)>>3)
 #endif
 
 #ifndef PICO_SCANVIDEO_B5_FROM_PIXEL
-#define PICO_SCANVIDEO_B5_FROM_PIXEL(p) (((p)>>PICO_SCANVIDEO_PIXEL_BSHIFT)&0x1f)
+#define PICO_SCANVIDEO_B5_FROM_PIXEL(p) (PICO_SCANVIDEO_B8_FROM_PIXEL(p)>>3)
 #endif
 
 #ifdef __cplusplus
