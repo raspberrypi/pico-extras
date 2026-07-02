@@ -8,7 +8,7 @@
 #define _PICO_SLEEP_H_
 
 #include "pico.h"
-#include "hardware/rosc.h"
+#include "hardware/rosc_extra.h"
 #include "hardware/timer.h"
 #include "pico/aon_timer.h"
 
