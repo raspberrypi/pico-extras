@@ -12,6 +12,7 @@
 #if !PICO_NO_HARDWARE
 
 #include "hardware/pio.h"
+#include "hardware/sync.h"
 
 #endif
 

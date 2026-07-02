@@ -10,5 +10,5 @@ else()
     )
 
     target_include_directories(pico_scanvideo INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
-    target_link_libraries(pico_scanvideo INTERFACE pico_base_headers pico_util_buffer)
+    target_link_libraries(pico_scanvideo INTERFACE pico_base_headers pico_util_buffer hardware_sync)
 endif()
