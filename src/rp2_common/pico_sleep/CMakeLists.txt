@@ -1,7 +1,7 @@
 pico_simple_hardware_target(sleep)
 pico_mirrored_target_link_libraries(hardware_sleep INTERFACE
         hardware_clocks
-        hardware_rosc_extras
+        hardware_rosc_extra
         hardware_irq
         pico_aon_timer
         )
