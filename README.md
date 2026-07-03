@@ -5,17 +5,16 @@ Note that any API here is a work in progress and subject to change.
 
 See [pico-playground](https://github.com/raspberrypi/pico-playground) for buildable example code using these extra libraries.
 
-
 Library|Description 
 ---|---
-[hardware_rosc_extra](src/rp2_common/hardware_rosc_extra)| Extra API functions for the ring oscillator
-`lwip`| Deprecated as of SDK 1.5.0; use `pico_lwip` and `pico_lwip_arch` from the SDK instead. 
+[hardware_rosc_extra](src/rp2_common/hardware_rosc_extra)| Extra API functions for the ring oscillator (renamed from hardware_rosc as that is now included in the SDK - note that the `rosc_enable()` function has been renamed to `rosc_restart()` too)
+`lwip`| _Deprecated_ as of SDK 1.5.0 and now removed; use `pico_lwip` and `pico_lwip_arch` from the SDK instead. 
 [pico_audio](src/common/pico_audio)|Audio output support; this is highly functional, but the API is subject to change 
 &nbsp;&nbsp;&nbsp;[pico_audio_i2s](src/rp2_common/pico_audio_i2s)|Audio output via I2S on 3 GPIOs using PIO. Arbitrary frequency
 &nbsp;&nbsp;&nbsp;[pico_audio_pwm](src/rp2_common/pico_audio_pwm)|Audio output via (PIO) PWM. Currently a bit limited in frequency support (it was developed on FPGA to do 22050Hz at 48Mhz system clock). It does however support error diffusion dithering and noise shaping with 16x oversampling to give surprisingly good audio quality. This code will be split to provide both a fixed frequencie(s) version and a slightly slower but rather better arbitrary frequency version supporting ever higher carrier frequencies 
 &nbsp;&nbsp;&nbsp;[pico_audio_spdif](src/rp2_common/pico_audio_spdif)|Audio output in S/PDIF on a GPIO using PIO. Supports up to 192khz stereo. Consumed OK in test, haven't tried it with real hardware
 [pico_sd_card](src/rp2_common/pico_sd_card)|1 and 4 bit SDIO support using PIO. This is functional (currently writing is only 1 bit), but the code is very much a prototype and the API is just a placeholder - the command set needs to be separated from the SDIO and shared with SPI. A reference design for an SD card interface can be found in the [Hardware design with RP2040](https://datasheets.raspberrypi.com/rp2040/hardware-design-with-rp2040.pdf) datasheet.
-[pico_sleep](src/rp2_common/pico_sleep)|Low power related APIs, WIP because they are not sufficiently generic and also only handle core 0
+[pico_sleep](src/rp2_common/pico_sleep)|Deprecated as of SDK 2.3.0 (use `pico_low_power` from the SDK instead). Low power related APIs, WIP because they are not sufficiently generic and also only handle core 0
 [pico_scanvideo](src/common/pico_scanvideo)|Support for video output where every pixel is _scanned out_ every frame. VGA/DPI support is highly functional and stable, but the API is subject to change. A reference design for a VGA board can be found in the [Hardware design with RP2040](https://datasheets.raspberrypi.com/rp2040/hardware-design-with-rp2040.pdf) datasheet.
 &nbsp;&nbsp;&nbsp;[pico_scanvideo_dbi](src/rp2_common/pico_scanvideo_dbi)| currently non-compiling... placeholder for adding scanvideo over MIPI DBI support.
 &nbsp;&nbsp;&nbsp;[pico_scanvideo_dpi](src/rp2_common/pico_scanvideo_dpi)| Highly functional and stable support for parallel RGB output and VSYNC/HSYNC/DEN/CLOCK for VGA/DPI.

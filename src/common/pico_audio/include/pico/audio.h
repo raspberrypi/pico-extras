@@ -25,7 +25,11 @@ extern "C" {
 // PICO_CONFIG: SPINLOCK_ID_AUDIO_FREE_LIST_LOCK, Spinlock number for the audio free list, min=0, max=31, default=6, group=audio
 #ifndef SPINLOCK_ID_AUDIO_FREE_LIST_LOCK
 #if PICO_RP2350 && !PICO_USE_SW_SPIN_LOCKS
-#error "When not using software spin locks on RP2350, you must explicitly define SPINLOCK_ID_AUDIO_FREE_LIST_LOCK, taking Errata RP2350-E2 and the SDK spin lock IDs into account"
+#if PICO_AUDIO_RP2350_OVERLAY_SDK_SPINLOCKS
+#define SPINLOCK_ID_AUDIO_FREE_LIST_LOCK PICO_SPINLOCK_ID_RAND
+#else
+#error "When not using software spin locks on RP2350, you must explicitly define SPINLOCK_ID_AUDIO_FREE_LIST_LOCK taking Errata RP2350-E2 and the SDK spin lock IDs into account, or set PICO_AUDIO_RP2350_OVERLAY_SDK_SPINLOCKS=1"
+#endif
 #else
 #define SPINLOCK_ID_AUDIO_FREE_LIST_LOCK 6
 #endif
@@ -34,7 +38,11 @@ extern "C" {
 // PICO_CONFIG: SPINLOCK_ID_AUDIO_PREPARED_LISTS_LOCK, Spinlock number for the audio prepared list, min=0, max=31, default=7, group=audio
 #ifndef SPINLOCK_ID_AUDIO_PREPARED_LISTS_LOCK
 #if PICO_RP2350 && !PICO_USE_SW_SPIN_LOCKS
-#error "When not using software spin locks on RP2350, you must explicitly define SPINLOCK_ID_AUDIO_PREPARED_LISTS_LOCK, taking Errata RP2350-E2 and the SDK spin lock IDs into account"
+#if PICO_AUDIO_RP2350_OVERLAY_SDK_SPINLOCKS
+#define SPINLOCK_ID_AUDIO_PREPARED_LISTS_LOCK PICO_SPINLOCK_ID_ATOMIC
+#else
+#error "When not using software spin locks on RP2350, you must explicitly define SPINLOCK_ID_AUDIO_PREPARED_LISTS_LOCK taking Errata RP2350-E2 and the SDK spin lock IDs into account, or set PICO_AUDIO_RP2350_OVERLAY_SDK_SPINLOCKS=1"
+#endif
 #else
 #define SPINLOCK_ID_AUDIO_PREPARED_LISTS_LOCK 7
 #endif

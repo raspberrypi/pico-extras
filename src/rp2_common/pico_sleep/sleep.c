@@ -15,20 +15,12 @@
 #include "hardware/pll.h"
 #include "hardware/regs/clocks.h"
 #include "hardware/clocks.h"
-#include "hardware/watchdog.h"
 #include "hardware/xosc.h"
-#include "hardware/rosc.h"
 #include "hardware/regs/io_bank0.h"
 // For __wfi
 #include "hardware/sync.h"
 #include "pico/runtime_init.h"
-
-#ifdef __riscv
-#include "hardware/riscv.h"
-#else
-// For scb_hw so we can enable deep sleep
-#include "hardware/structs/scb.h"
-#endif
+#include "pico/platform/cpu_regs.h"
 
 #if !PICO_RP2040
 #include "hardware/powman.h"
@@ -37,7 +29,7 @@
 // The difference between sleep and dormant is that ALL clocks are stopped in dormant mode,
 // until the source (either xosc or rosc) is started again by an external event.
 // In sleep mode some clocks can be left running controlled by the SLEEP_EN registers in the clocks
-// block. For example you could keep clk_rtc running. Some destinations (proc0 and proc1 wakeup logic)
+// block. For example, you could keep clk_rtc running. Some destinations (proc0 and proc1 wakeup logic)
 // can't be stopped in sleep mode otherwise there wouldn't be enough logic to wake up again.
 
 static dormant_source_t _dormant_source;
@@ -285,7 +277,7 @@ void sleep_goto_dormant_until_pin(uint gpio_pin, bool edge, bool high) {
 void sleep_power_up(void)
 {
     // Re-enable the ring oscillator, which will essentially kickstart the proc
-    rosc_enable();
+    rosc_restart();
 
     // Reset the sleep enable register so peripherals and other hardware can be used
     clocks_hw->sleep_en0 |= ~(0u);
