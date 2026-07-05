@@ -425,13 +425,13 @@ const scanvideo_timing_t vga_timing_640x480_60_default =
                 .v_active = 480,
 
                 .h_front_porch = 16,
-                .h_pulse = 64,
+                .h_pulse = 64,          // spec says 96 ?
                 .h_total = 800,
                 .h_sync_polarity = 1,
 
-                .v_front_porch = 1,
+                .v_front_porch = 1,     // spec says 10 ?
                 .v_pulse = 2,
-                .v_total = 523,
+                .v_total = 523,         // spec says 525 ?
                 .v_sync_polarity = 1,
 
                 .enable_clock = 0,
@@ -477,6 +477,49 @@ const scanvideo_mode_t vga_mode_640x480_60 =
                 .pio_program = &video_24mhz_composable,
                 .width = 640,
                 .height = 480,
+                .xscale = 1,
+                .yscale = 1,
+        };
+
+const scanvideo_timing_t vga_timing_640x400_70_default =
+        {
+                .clock_freq = 25000000, // 25.175MHz
+
+                .h_active = 640,
+                .v_active = 400,
+
+                .h_front_porch = 16,
+                .h_pulse = 96,
+                .h_total = 800,
+                .h_sync_polarity = 1,
+
+                .v_front_porch = 3,     // vs 12
+                .v_pulse = 2,
+                .v_total = 446,         // 449 * 800 * 70 / 25.175M 0.9987  vs 446 * 800 * 70 / 25 000 000 = .99904
+                .v_sync_polarity = 0,   // note opposite polarity
+
+                .enable_clock = 0,
+                .clock_polarity = 0,
+
+                .enable_den = 0
+        };
+
+const scanvideo_mode_t vga_mode_320x200_70 =
+        {
+                .default_timing = &vga_timing_640x400_70_default,
+                .pio_program = &video_24mhz_composable,
+                .width = 320,
+                .height = 200,
+                .xscale = 2,
+                .yscale = 2,
+        };
+
+const scanvideo_mode_t vga_mode_640x400_70 =
+        {
+                .default_timing = &vga_timing_640x400_70_default,
+                .pio_program = &video_24mhz_composable,
+                .width = 640,
+                .height = 400,
                 .xscale = 1,
                 .yscale = 1,
         };
