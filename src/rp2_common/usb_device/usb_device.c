@@ -52,6 +52,8 @@ static volatile uint32_t trace_i;
 #define usb_hw_set hw_set_alias(usb_hw)
 #define usb_hw_clear hw_clear_alias(usb_hw)
 
+#define ROUND_UP(x, align) (((x) + ((align) - 1)) & ~((align) - 1))
+
 void _usb_transfer_current_packet_only(struct usb_endpoint *ep);
 
 const struct usb_transfer_type usb_current_packet_only_transfer_type = {
@@ -229,9 +231,12 @@ static void _usb_endpoint_hw_init(struct usb_endpoint *ep, __unused uintptr_t da
     ep->dpram_buffer_offset = _device.next_buffer_offset;
     usb_debug("endpoint %d %s buf at %04x %04xx%d\n", ep_num, usb_endpoint_dir_string(ep), ep->dpram_buffer_offset,
               ep->buffer_size, _ep_buffer_count(ep));
-    uint32_t stride = _usb_endpoint_stride(ep);
-    if (ep->double_buffered) stride <<= 1u;
-    _device.next_buffer_offset += stride;
+    uint16_t stride = _usb_endpoint_stride(ep);
+    uint16_t buf_size_align = ROUND_UP(ep->buffer_size, stride);
+
+    if (ep->double_buffered) buf_size_align <<= 1u;
+
+    _device.next_buffer_offset += buf_size_align;
     assert(_device.next_buffer_offset <= USB_DPRAM_MAX);
     if (ep_num) {
         uint32_t reg = EP_CTRL_ENABLE_BITS
@@ -1137,10 +1142,11 @@ struct usb_interface *usb_interface_init(struct usb_interface *interface, const 
 #if !PICO_USBDEV_BULK_ONLY_EP1_THRU_16
         if (USB_TRANSFER_TYPE_ISOCHRONOUS == (ep_desc->bmAttributes & USB_TRANSFER_TYPE_BITS)) {
             endpoints[i]->buffer_stride = 128 << PICO_USBDEV_ISOCHRONOUS_BUFFER_STRIDE_TYPE;
+            assert(ep_desc->wMaxPacketSize < 1024);
         } else {
             endpoints[i]->buffer_stride = 64;
+            assert(ep_desc->wMaxPacketSize <= endpoints[i]->buffer_stride);
         }
-        assert(ep_desc->wMaxPacketSize <= endpoints[i]->buffer_stride);
 #endif
     }
     return interface;

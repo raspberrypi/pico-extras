@@ -87,8 +87,8 @@ typedef void (*usb_transfer_completed_func)(struct usb_endpoint *ep, struct usb_
 
 struct usb_buffer {
     uint8_t *data;
-    uint8_t data_len;
-    uint8_t data_max;
+    uint16_t data_len;
+    uint16_t data_max;
     // then...
     bool valid; // aka user owned
 };
