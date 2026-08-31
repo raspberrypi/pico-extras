@@ -4,6 +4,7 @@ pico_add_subdirectory(pico_sleep)
 pico_add_subdirectory(pico_audio_i2s)
 pico_add_subdirectory(pico_audio_pwm)
 pico_add_subdirectory(pico_audio_spdif)
+pico_add_subdirectory(pico_camera)
 pico_add_subdirectory(pico_sd_card)
 # currently very old and non-compiling
 #pico_add_subdirectory(pico_scanvideo_dbi)
